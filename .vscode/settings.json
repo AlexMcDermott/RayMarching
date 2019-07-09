@@ -1,0 +1,21 @@
+{
+  "files.exclude": {
+    ".cache": true,
+    "**/node_modules": true
+  },
+  "editor.formatOnSave": true,
+  "json.format.enable": false,
+  "javascript.format.enable": false,
+  "typescript.format.enable": false,
+  "html.format.enable": false,
+  "cSpell.ignorePaths": [
+    "**/package.json",
+    "**/package-lock.json",
+    "**/node_modules/**",
+    "**/vscode-extension/**",
+    "**/.git/**",
+    ".vscode",
+    "typings"
+  ],
+  "cSpell.words": ["twgl", "mediump", "coord"]
+}
