@@ -16,13 +16,16 @@ const arrays = {
 };
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
-function render(time: DOMHighResTimeStamp) {
+function render() {
   twgl.resizeCanvasToDisplaySize(gl.canvas);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   const uniforms = {
+    maxSteps: 255,
+    minDist: 0,
+    maxDist: 100,
+    epsilon: 0.0001,
     resolution: [gl.canvas.width, gl.canvas.height],
-    time: time * 0.001,
   };
 
   gl.useProgram(programInfo.program);
@@ -33,4 +36,4 @@ function render(time: DOMHighResTimeStamp) {
   requestAnimationFrame(render);
 }
 
-requestAnimationFrame(render);
+render();
