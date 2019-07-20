@@ -7,6 +7,8 @@ export default `
   uniform float epsilon;
   uniform vec2 resolution;
 
+  const vec3 lightPos = vec3(5.0, 5.0, 5.0);
+
   float sphereSDF(vec3 samplePoint) {
     return length(samplePoint) - 1.0;
   }
@@ -20,13 +22,9 @@ export default `
     for (int i = 0; i < 10000; i++) {
       if (i == maxSteps) return end;
       float dist = sceneSDF(eye + depth * marchingDirection);
-      if (dist < epsilon) {
-        return depth;
-      }
+      if (dist < epsilon) return depth;
       depth += dist;
-      if (depth >= end) {
-        return end;
-      }
+      if (depth >= end) return end;
     }
   }
 
@@ -36,15 +34,26 @@ export default `
     return normalize(vec3(xy, -z));
   }
 
+  vec3 estimateNormal(vec3 p) {
+    return normalize(vec3(
+      sceneSDF(vec3(p.x + epsilon, p.y, p.z)) - sceneSDF(vec3(p.x - epsilon, p.y, p.z)),
+      sceneSDF(vec3(p.x, p.y + epsilon, p.z)) - sceneSDF(vec3(p.x, p.y - epsilon, p.z)),
+      sceneSDF(vec3(p.x, p.y, p.z  + epsilon)) - sceneSDF(vec3(p.x, p.y, p.z - epsilon))
+    ));
+  }
+
   void main() {
     vec3 dir = rayDirection(45.0, resolution, gl_FragCoord.xy);
     vec3 eye = vec3(0.0, 0.0, 5.0);
     float dist = shortestDistanceToSurface(eye, dir, minDist, maxDist);
     if (dist > maxDist - epsilon) {
       gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-      return;
     } else {
-      gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      vec3 pos = eye + dist * dir;
+      vec3 normal = estimateNormal(pos);
+      vec3 toLightFromPos = normalize(lightPos - pos);
+      float cosAngle = clamp(dot(normal, toLightFromPos), 0.0, 1.0);
+      gl_FragColor = vec4(1.0 * cosAngle, 0.0, 0.0, 1.0);
     }    
   }
 `;
