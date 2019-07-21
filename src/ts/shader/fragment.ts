@@ -6,18 +6,19 @@ export default `
   uniform float maxDist;
   uniform float epsilon;
   uniform vec2 resolution;
-
-  const vec3 lightPos = vec3(5.0, 5.0, 5.0);
+  uniform vec3 camera;
+  uniform vec3 lightPos;
+  uniform vec3 spherePos;
 
   float sphereSDF(vec3 samplePoint) {
-    return length(samplePoint) - 1.0;
+    return length(samplePoint - spherePos) - 1.0;
   }
 
   float sceneSDF(vec3 samplePoint) {
     return sphereSDF(samplePoint);
   }
 
-  float shortestDistanceToSurface(vec3 eye, vec3 marchingDirection, float start, float end) {
+  float distToScene(vec3 eye, vec3 marchingDirection, float start, float end) {
     float depth = start;
     for (int i = 0; i < 10000; i++) {
       if (i == maxSteps) return end;
@@ -28,7 +29,7 @@ export default `
     }
   }
 
-  vec3 rayDirection(float fieldOfView, vec2 size, vec2 fragCoord) {
+  vec3 calcRay(float fieldOfView, vec2 size, vec2 fragCoord) {
     vec2 xy = fragCoord - size / 2.0;
     float z = size.y / tan(radians(fieldOfView) / 2.0);
     return normalize(vec3(xy, -z));
@@ -43,13 +44,12 @@ export default `
   }
 
   void main() {
-    vec3 dir = rayDirection(45.0, resolution, gl_FragCoord.xy);
-    vec3 eye = vec3(0.0, 0.0, 5.0);
-    float dist = shortestDistanceToSurface(eye, dir, minDist, maxDist);
+    vec3 dir = calcRay(45.0, resolution, gl_FragCoord.xy);
+    float dist = distToScene(camera, dir, minDist, maxDist);
     if (dist > maxDist - epsilon) {
       gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
     } else {
-      vec3 pos = eye + dist * dir;
+      vec3 pos = camera + dist * dir;
       vec3 normal = estimateNormal(pos);
       vec3 toLightFromPos = normalize(lightPos - pos);
       float cosAngle = clamp(dot(normal, toLightFromPos), 0.0, 1.0);

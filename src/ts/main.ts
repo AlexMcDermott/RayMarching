@@ -26,6 +26,9 @@ function render() {
     maxDist: 100,
     epsilon: 0.0001,
     resolution: [gl.canvas.width, gl.canvas.height],
+    camera: [0, 0, 5],
+    lightPos: [5, 5, 5],
+    spherePos: [0, 0, 0],
   };
 
   gl.useProgram(programInfo.program);
