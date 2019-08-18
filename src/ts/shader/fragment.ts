@@ -8,14 +8,13 @@ export default `
   uniform vec2 resolution;
   uniform vec3 camera;
   uniform vec3 lightPos;
-  uniform vec3 spherePos;
 
-  float sphereSDF(vec3 samplePoint) {
-    return length(samplePoint - spherePos) - 1.0;
+  float sphereSDF(vec3 samplePoint, vec3 pos, float radius) {
+    return length(samplePoint - pos) - radius;
   }
 
   float sceneSDF(vec3 samplePoint) {
-    return sphereSDF(samplePoint);
+    return sphereSDF(samplePoint, vec3(0.0), 0.5);
   }
 
   float distToScene(vec3 eye, vec3 marchingDirection, float start, float end) {
@@ -52,7 +51,7 @@ export default `
       vec3 pos = camera + dist * dir;
       vec3 normal = estimateNormal(pos);
       vec3 toLightFromPos = normalize(lightPos - pos);
-      float cosAngle = clamp(dot(normal, toLightFromPos), 0.0, 1.0);
+      float cosAngle = clamp(dot(normal, toLightFromPos), 0.08, 1.0);
       gl_FragColor = vec4(1.0 * cosAngle, 0.0, 0.0, 1.0);
     }    
   }
