@@ -28,6 +28,11 @@ function render() {
     resolution: [gl.canvas.width, gl.canvas.height],
     cameraPos: [0, 0, 5],
     lightPos: [5, 5, 5],
+    objectPos: [0, 0, 0],
+    objectColour: [0, 0.9, 0.5],
+    worldColour: [0.1, 0.1, 0.1],
+    Kd: 1,
+    Ks: 1,
   };
 
   gl.useProgram(programInfo.program);

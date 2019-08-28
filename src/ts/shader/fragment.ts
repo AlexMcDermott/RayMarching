@@ -8,13 +8,18 @@ export default `
   uniform vec2 resolution;
   uniform vec3 cameraPos;
   uniform vec3 lightPos;
+  uniform vec3 objectPos;
+  uniform vec3 objectColour;
+  uniform vec3 worldColour;
+  uniform float Kd;
+  uniform float Ks;
 
   float sphereSDF(vec3 samplePoint, vec3 pos, float radius) {
     return length(samplePoint - pos) - radius;
   }
 
   float sceneSDF(vec3 samplePoint) {
-    return sphereSDF(samplePoint, vec3(0.0), 0.5);
+    return sphereSDF(samplePoint, objectPos, 0.5);
   }
 
   float distToScene(vec3 eye, vec3 marchingDirection, float start, float end) {
@@ -42,19 +47,14 @@ export default `
     ));
   }
 
-  float calcDiffuse(vec3 pos, vec3 lightPos) {
-    vec3 normal = estimateNormal(pos);
-    vec3 toLightFromPos = normalize(lightPos - pos);
-    float factor = clamp(dot(normal, toLightFromPos), 0.1, 1.0);
+  float calcDiffuse(vec3 normal, vec3 toLight) {
+    float factor = clamp(dot(normal, toLight), 0.1, 1.0);
     return factor;
   }
 
-  float calcSpecular(vec3 pos, vec3 lightPos, vec3 cameraPos) {
-    vec3 normal = estimateNormal(pos);
-    vec3 toCameraFromPos = normalize(cameraPos - pos);
-    vec3 toLightFromPos = normalize(lightPos - pos);
-    vec3 lightReflected = 2.0 * dot(normal, toLightFromPos) * normal - toLightFromPos;
-    float factor = clamp(dot(toCameraFromPos, lightReflected), 0.0, 1.0);
+  float calcSpecular(vec3 normal, vec3 toLight, vec3 toCamera) {
+    vec3 lightReflected = 2.0 * dot(normal, toLight) * normal - toLight;
+    float factor = clamp(dot(toCamera, lightReflected), 0.0, 1.0);
     return pow(factor, 100.0);
   }
 
@@ -62,13 +62,15 @@ export default `
     vec3 dir = calcRay(45.0, resolution, gl_FragCoord.xy);
     float dist = distToScene(cameraPos, dir, minDist, maxDist);
     if (dist > maxDist - epsilon) {
-      gl_FragColor = vec4(vec3(0.1), 1.0);
+      gl_FragColor = vec4(worldColour, 1.0);
     } else {
       vec3 pos = cameraPos + dist * dir;
-      float diffuse = calcDiffuse(pos, lightPos);
-      float specular = calcSpecular(pos, lightPos, cameraPos);
-      vec3 colour = vec3(0.0, 0.9, 0.5);
-      gl_FragColor = vec4(colour * diffuse + vec3(1.0) * specular, 1.0);
+      vec3 normal = estimateNormal(pos);
+      vec3 toLightFromPos = normalize(lightPos - pos);
+      vec3 toCameraFromPos = normalize(cameraPos - pos);
+      float diffuse = calcDiffuse(normal, toLightFromPos);
+      float specular = calcSpecular(normal, toLightFromPos, toCameraFromPos);
+      gl_FragColor = vec4(objectColour * Kd * diffuse + vec3(1.0) * Ks * specular, 1.0);
     }    
   }
 `;
