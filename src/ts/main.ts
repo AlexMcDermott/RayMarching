@@ -43,8 +43,12 @@ function render() {
   twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
   twgl.setUniforms(programInfo, uniforms);
   twgl.drawBufferInfo(gl, bufferInfo);
-
-  requestAnimationFrame(render);
 }
+
+window.addEventListener('resize', () => {
+  cnv.width = window.innerWidth;
+  cnv.height = window.innerHeight;
+  render();
+});
 
 render();
