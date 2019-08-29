@@ -6,13 +6,17 @@ export default `
   uniform float maxDist;
   uniform float epsilon;
   uniform vec2 resolution;
+  uniform float FOV;
   uniform vec3 cameraPos;
+  uniform vec3 facing;
   uniform vec3 lightPos;
   uniform vec3 objectPos;
   uniform vec3 objectColour;
   uniform vec3 worldColour;
   uniform float Kd;
   uniform float Ks;
+  uniform float ambientMin;
+  uniform float specularPower;
 
   float sphereSDF(vec3 samplePoint, vec3 pos, float radius) {
     return length(samplePoint - pos) - radius;
@@ -22,11 +26,11 @@ export default `
     return sphereSDF(samplePoint, objectPos, 0.5);
   }
 
-  float distToScene(vec3 eye, vec3 marchingDirection, float start, float end) {
+  float distToScene(vec3 camera, vec3 marchingDirection, float start, float end) {
     float depth = start;
     for (int i = 0; i < 10000; i++) {
       if (i == maxSteps) return end;
-      float dist = sceneSDF(eye + depth * marchingDirection);
+      float dist = sceneSDF(camera + depth * marchingDirection);
       if (dist < epsilon) return depth;
       depth += dist;
       if (depth >= end) return end;
@@ -48,18 +52,18 @@ export default `
   }
 
   float calcDiffuse(vec3 normal, vec3 toLight) {
-    float factor = clamp(dot(normal, toLight), 0.1, 1.0);
+    float factor = clamp(dot(normal, toLight), ambientMin, 1.0);
     return factor;
   }
 
   float calcSpecular(vec3 normal, vec3 toLight, vec3 toCamera) {
     vec3 lightReflected = 2.0 * dot(normal, toLight) * normal - toLight;
     float factor = clamp(dot(toCamera, lightReflected), 0.0, 1.0);
-    return pow(factor, 100.0);
+    return pow(factor, specularPower);
   }
 
   void main() {
-    vec3 dir = calcRay(45.0, resolution, gl_FragCoord.xy);
+    vec3 dir = calcRay(FOV, resolution, gl_FragCoord.xy);
     float dist = distToScene(cameraPos, dir, minDist, maxDist);
     if (dist > maxDist - epsilon) {
       gl_FragColor = vec4(worldColour, 1.0);

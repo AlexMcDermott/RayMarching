@@ -26,13 +26,17 @@ function render() {
     maxDist: 100,
     epsilon: 0.0001,
     resolution: [gl.canvas.width, gl.canvas.height],
+    FOV: 45,
     cameraPos: [0, 0, 5],
+    facing: [0, 0, 0],
     lightPos: [5, 5, 5],
     objectPos: [0, 0, 0],
     objectColour: [0, 0.9, 0.5],
     worldColour: [0.1, 0.1, 0.1],
     Kd: 1,
-    Ks: 1,
+    Ks: 0.2,
+    ambientMin: 0.2,
+    specularPower: 10,
   };
 
   gl.useProgram(programInfo.program);
