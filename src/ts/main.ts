@@ -17,7 +17,7 @@ const arrays = {
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 function render() {
-  twgl.resizeCanvasToDisplaySize(gl.canvas);
+  twgl.resizeCanvasToDisplaySize(cnv);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
   const uniforms = {
