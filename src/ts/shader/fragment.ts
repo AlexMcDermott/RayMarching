@@ -66,7 +66,7 @@ export default `
     vec3 dir = calcRay(FOV, resolution, gl_FragCoord.xy);
     float dist = distToScene(cameraPos, dir, minDist, maxDist);
     if (dist > maxDist - epsilon) {
-      gl_FragColor = vec4(worldColour, 1.0);
+      gl_FragColor = vec4(worldColour / vec3(255), 1.0);
     } else {
       vec3 pos = cameraPos + dist * dir;
       vec3 normal = estimateNormal(pos);
@@ -74,7 +74,7 @@ export default `
       vec3 toCameraFromPos = normalize(cameraPos - pos);
       float diffuse = calcDiffuse(normal, toLightFromPos);
       float specular = calcSpecular(normal, toLightFromPos, toCameraFromPos);
-      gl_FragColor = vec4(objectColour * Kd * diffuse + vec3(1.0) * Ks * specular, 1.0);
+      gl_FragColor = vec4((objectColour / vec3(255)) * Kd * diffuse + vec3(1.0) * Ks * specular, 1.0);
     }    
   }
 `;
