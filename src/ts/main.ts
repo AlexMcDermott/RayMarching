@@ -50,6 +50,8 @@ function render() {
 window.addEventListener('resize', () => {
   cnv.width = window.innerWidth;
   cnv.height = window.innerHeight;
+  uniforms.resolution[0] = gl.canvas.width;
+  uniforms.resolution[1] = gl.canvas.height;
 });
 
 window.onload = () => {
