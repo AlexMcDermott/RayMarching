@@ -30,6 +30,7 @@ const uniforms = {
   objectPos: [0, 0, 0],
   objectColour: [246, 189, 120],
   worldColour: [72, 92, 120],
+  Kw: 0.5,
   Kd: 1,
   Ks: 0.2,
   ambientMin: 0.2,
@@ -59,6 +60,7 @@ window.onload = () => {
   gui.add(uniforms, 'FOV', 1, 180);
   gui.addColor(uniforms, 'objectColour');
   gui.addColor(uniforms, 'worldColour');
+  gui.add(uniforms, 'Kw', 0, 1);
   gui.add(uniforms, 'Kd', 0, 1);
   gui.add(uniforms, 'Ks', 0, 1);
   gui.add(uniforms, 'ambientMin', 0, 1);

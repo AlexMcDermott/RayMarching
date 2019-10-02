@@ -13,6 +13,7 @@ export default `
   uniform vec3 objectPos;
   uniform vec3 objectColour;
   uniform vec3 worldColour;
+  uniform float Kw;
   uniform float Kd;
   uniform float Ks;
   uniform float ambientMin;
@@ -66,7 +67,7 @@ export default `
     vec3 dir = calcRay(FOV, resolution, gl_FragCoord.xy);
     float dist = distToScene(cameraPos, dir, minDist, maxDist);
     if (dist > maxDist - epsilon) {
-      gl_FragColor = vec4(worldColour / vec3(255), 1.0);
+      gl_FragColor = vec4(Kw * (worldColour / vec3(255)), 1.0);
     } else {
       vec3 pos = cameraPos + dist * dir;
       vec3 normal = estimateNormal(pos);
