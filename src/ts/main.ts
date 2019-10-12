@@ -2,8 +2,10 @@ import * as dat from 'dat.gui';
 import { vec2, vec3 } from 'gl-matrix';
 import * as twgl from 'twgl.js';
 
-import { default as fragmentSource } from './shader/fragment';
-import { default as vertexSource } from './shader/vertex';
+// @ts-ignore
+import fragmentSource from './shader/fragment.glsl';
+// @ts-ignore
+import vertexSource from './shader/vertex.glsl';
 
 const cnv = document.createElement('canvas');
 cnv.width = window.innerWidth;

@@ -17,5 +17,5 @@
     ".vscode",
     "typings"
   ],
-  "cSpell.words": ["twgl", "mediump", "coord"]
+  "cSpell.words": ["twgl", "mediump", "coord", "glsl"]
 }
