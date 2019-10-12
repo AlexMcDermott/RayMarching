@@ -1,4 +1,5 @@
 import * as dat from 'dat.gui';
+import { vec2, vec3 } from 'gl-matrix';
 import * as twgl from 'twgl.js';
 
 import { default as fragmentSource } from './shader/fragment';
@@ -22,12 +23,11 @@ const uniforms = {
   minDist: 0,
   maxDist: 100,
   epsilon: 0.0001,
-  resolution: [gl.canvas.width, gl.canvas.height],
+  resolution: vec2.fromValues(cnv.width, cnv.height),
   FOV: 45,
-  cameraPos: [0, 0, 5],
-  facing: [0, 0, 0],
-  lightPos: [5, 5, 5],
-  objectPos: [0, 0, 0],
+  cameraPos: vec3.fromValues(0, 0, 0),
+  lightPos: vec3.fromValues(5, 5, 5),
+  objectPos: vec3.fromValues(0, 0, -5),
   objectColour: [246, 189, 120],
   worldColour: [72, 92, 120],
   Kw: 0.5,
@@ -51,8 +51,7 @@ function render() {
 window.addEventListener('resize', () => {
   cnv.width = window.innerWidth;
   cnv.height = window.innerHeight;
-  uniforms.resolution[0] = gl.canvas.width;
-  uniforms.resolution[1] = gl.canvas.height;
+  uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
 });
 
 window.onload = () => {
