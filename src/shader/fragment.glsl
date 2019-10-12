@@ -11,9 +11,9 @@ uniform vec3 lightPos;
 uniform vec3 objectPos;
 uniform vec3 objectColour;
 uniform vec3 worldColour;
-uniform float Kw;
-uniform float Kd;
-uniform float Ks;
+uniform float worldColourFactor;
+uniform float diffuseFactor;
+uniform float specularFactor;
 uniform float ambientMin;
 uniform float specularPower;
 
@@ -71,7 +71,7 @@ void main() {
   vec3 dir = calcRay(FOV, resolution, gl_FragCoord.xy);
   float dist = distToScene(cameraPos, dir, minDist, maxDist);
   if (dist > maxDist - epsilon) {
-    gl_FragColor = vec4(Kw * (worldColour / vec3(255)), 1.0);
+    gl_FragColor = vec4(worldColourFactor * (worldColour / vec3(255)), 1.0);
   } else {
     vec3 hitPoint = cameraPos + dist * dir;
     vec3 normal = estimateNormal(hitPoint, epsilon);
@@ -79,6 +79,6 @@ void main() {
     vec3 toCameraFromHit = normalize(cameraPos - hitPoint);
     float diffuse = calcDiffuse(normal, toLightFromHit, ambientMin);
     float specular = calcSpecular(normal, toLightFromHit, toCameraFromHit, specularPower);
-    gl_FragColor = vec4((objectColour / vec3(255)) * Kd * diffuse + vec3(1.0) * Ks * specular, 1.0);
+    gl_FragColor = vec4((objectColour / vec3(255)) * diffuseFactor * diffuse + vec3(1.0) * specularFactor * specular, 1.0);
   }    
 }
