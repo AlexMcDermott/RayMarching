@@ -74,12 +74,12 @@ export default `
     if (dist > maxDist - epsilon) {
       gl_FragColor = vec4(Kw * (worldColour / vec3(255)), 1.0);
     } else {
-      vec3 pos = cameraPos + dist * dir;
-      vec3 normal = estimateNormal(pos, epsilon);
-      vec3 toLightFromPos = normalize(lightPos - pos);
-      vec3 toCameraFromPos = normalize(cameraPos - pos);
-      float diffuse = calcDiffuse(normal, toLightFromPos, ambientMin);
-      float specular = calcSpecular(normal, toLightFromPos, toCameraFromPos, specularPower);
+      vec3 hitPoint = cameraPos + dist * dir;
+      vec3 normal = estimateNormal(hitPoint, epsilon);
+      vec3 toLightFromHit = normalize(lightPos - hitPoint);
+      vec3 toCameraFromHit = normalize(cameraPos - hitPoint);
+      float diffuse = calcDiffuse(normal, toLightFromHit, ambientMin);
+      float specular = calcSpecular(normal, toLightFromHit, toCameraFromHit, specularPower);
       gl_FragColor = vec4((objectColour / vec3(255)) * Kd * diffuse + vec3(1.0) * Ks * specular, 1.0);
     }    
   }
