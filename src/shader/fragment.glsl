@@ -42,10 +42,15 @@ float distToScene(vec3 cameraPos, vec3 dir, float start, float end) {
   }
 }
 
-vec3 calcRay(float fieldOfView, vec2 resolution, vec2 fragCoord) {
-  vec2 xy = fragCoord - resolution / 2.0;
-  float z = resolution.y / tan(radians(fieldOfView) / 2.0);
-  return normalize(vec3(xy, -z));
+vec3 calcRay(vec3 origin, vec3 target, float FOV, vec2 fragCoord, vec2 resolution) {
+  vec2 uv = 2.0 * (fragCoord / resolution) - 1.0;
+  vec3 upGuide = vec3(0, 1, 0);
+  vec3 forward = normalize(target - origin);
+  vec3 right = normalize(cross(forward, upGuide));
+  vec3 up = cross(right, forward);
+  float h = tan(radians(FOV / 2.0));
+  float w = h * (resolution.x / resolution.y);
+  return normalize(forward + uv.x * w * right + uv.y * h * up);
 }
 
 vec3 estimateNormal(vec3 p, float epsilon) {
@@ -68,7 +73,7 @@ float calcSpecular(vec3 normal, vec3 toLight, vec3 toCamera, float specularPower
 }
 
 void main() {
-  vec3 dir = calcRay(FOV, resolution, gl_FragCoord.xy);
+  vec3 dir = calcRay(cameraPos, objectPos, FOV, gl_FragCoord.xy, resolution);
   float dist = distToScene(cameraPos, dir, minDist, maxDist);
   if (dist > maxDist - epsilon) {
     gl_FragColor = vec4(worldColourFactor * (worldColour / vec3(255)), 1.0);
@@ -77,8 +82,8 @@ void main() {
     vec3 normal = estimateNormal(hitPoint, epsilon);
     vec3 toLightFromHit = normalize(lightPos - hitPoint);
     vec3 toCameraFromHit = normalize(cameraPos - hitPoint);
-    float diffuse = calcDiffuse(normal, toLightFromHit, ambientMin);
-    float specular = calcSpecular(normal, toLightFromHit, toCameraFromHit, specularPower);
-    gl_FragColor = vec4((objectColour / vec3(255)) * diffuseFactor * diffuse + vec3(1.0) * specularFactor * specular, 1.0);
+    float diffuse = diffuseFactor * calcDiffuse(normal, toLightFromHit, ambientMin);
+    float specular = specularFactor * calcSpecular(normal, toLightFromHit, toCameraFromHit, specularPower);
+    gl_FragColor = vec4((objectColour / vec3(255)) * diffuse + vec3(1.0) * specular, 1.0);
   }    
 }

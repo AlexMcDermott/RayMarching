@@ -58,7 +58,7 @@ window.addEventListener('resize', () => {
 
 window.onload = () => {
   const gui = new dat.GUI();
-  gui.add(uniforms, 'FOV', 1, 180);
+  gui.add(uniforms, 'FOV', 1, 179);
   gui.addColor(uniforms, 'objectColour');
   gui.addColor(uniforms, 'worldColour');
   gui.add(uniforms, 'worldColourFactor', 0, 1);
