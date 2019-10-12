@@ -32,20 +32,20 @@ export default `
     return boxSDF(samplePoint, objectPos, vec3(0.5));
   }
 
-  float distToScene(vec3 camera, vec3 dir, float start, float end) {
+  float distToScene(vec3 cameraPos, vec3 dir, float start, float end) {
     float depth = start;
     for (int i = 0; i < 10000; i++) {
       if (i == maxSteps) return end;
-      float dist = sceneSDF(camera + depth * dir);
+      float dist = sceneSDF(cameraPos + depth * dir);
       if (dist < epsilon) return depth;
       depth += dist;
       if (depth >= end) return end;
     }
   }
 
-  vec3 calcRay(float fieldOfView, vec2 size, vec2 fragCoord) {
-    vec2 xy = fragCoord - size / 2.0;
-    float z = size.y / tan(radians(fieldOfView) / 2.0);
+  vec3 calcRay(float fieldOfView, vec2 resolution, vec2 fragCoord) {
+    vec2 xy = fragCoord - resolution / 2.0;
+    float z = resolution.y / tan(radians(fieldOfView) / 2.0);
     return normalize(vec3(xy, -z));
   }
 
