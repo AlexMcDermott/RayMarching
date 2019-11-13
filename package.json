@@ -10,13 +10,14 @@
     "build": "parcel build --public-url /$(basename $(pwd))/ src/index.html",
     "deploy": "gh-pages -d dist -m \"Built from $(git rev-parse --short HEAD) on master\" ; npm run cleanup",
     "cleanup": "rm -rf dist && gh-pages-clean",
-    "setup": "rm -rf .git && > README.md && git init && npm install"
+    "setup": "rm -rf .git && > README.md && git init && npm install",
+    "push-deploy": "git push -u origin HEAD && if git-branch-is master ; then npm run build && npm run deploy ; fi"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint && npm run pretty",
-      "post-commit": "git push -u origin HEAD && if git-branch-is master ; then npm run build && npm run deploy ; fi",
-      "post-merge": "if git-branch-is master ; then npm run build && npm run deploy ; fi"
+      "post-commit": "npm run push deploy",
+      "post-merge": "npm run push deploy"
     }
   },
   "author": "Alex McDermott",
