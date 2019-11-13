@@ -141,6 +141,7 @@ gui.add(uniforms, 'specularFactor', 0, 1);
 gui.add(uniforms, 'ambientMin', 0, 1);
 gui.add(uniforms, 'specularPower', 1, 50);
 requestAnimationFrame(render);
+console.log('test');
 
 document.addEventListener('keydown', handleKey);
 document.addEventListener('keyup', handleKey);
