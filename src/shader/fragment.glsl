@@ -54,15 +54,14 @@ vec3 estimateNormal(vec3 p) {
   ));
 }
 
-float calcDiffuse(vec3 normal, vec3 toLight) {
-  float factor = clamp(dot(normal, toLight), ambientMin, 1.0);
-  return factor;
-}
-
-float calcSpecular(vec3 normal, vec3 toLight, vec3 toCamera) {
+vec3 calcPhong(vec3 hitPoint) {
+  vec3 normal = estimateNormal(hitPoint);
+  vec3 toLight = normalize(lightPos - hitPoint);
+  vec3 toCamera = normalize(cameraPos - hitPoint);
   vec3 lightReflected = 2.0 * dot(normal, toLight) * normal - toLight;
-  float factor = clamp(dot(toCamera, lightReflected), 0.0, 1.0);
-  return pow(factor, specularPower);
+  float diffuse = diffuseFactor * clamp(dot(normal, toLight), ambientMin, 1.0);
+  float specular = specularFactor * pow(clamp(dot(toCamera, lightReflected), 0.0, 1.0), specularPower);
+  return (objectColour / vec3(255)) * diffuse + vec3(1.0) * specular;
 }
 
 void main() {
@@ -72,11 +71,6 @@ void main() {
     gl_FragColor = vec4(worldColourFactor * (worldColour / vec3(255)), 1.0);
   } else {
     vec3 hitPoint = cameraPos + dist * dir;
-    vec3 normal = estimateNormal(hitPoint);
-    vec3 toLightFromHit = normalize(lightPos - hitPoint);
-    vec3 toCameraFromHit = normalize(cameraPos - hitPoint);
-    float diffuse = diffuseFactor * calcDiffuse(normal, toLightFromHit);
-    float specular = specularFactor * calcSpecular(normal, toLightFromHit, toCameraFromHit);
-    gl_FragColor = vec4((objectColour / vec3(255)) * diffuse + vec3(1.0) * specular, 1.0);
+    gl_FragColor = vec4(calcPhong(hitPoint), 1.0);
   }    
 }
