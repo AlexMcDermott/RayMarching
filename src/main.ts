@@ -8,31 +8,29 @@ import fragmentSource from './shader/fragment.glsl';
 import vertexSource from './shader/vertex.glsl';
 
 const cnv = document.createElement('canvas');
+const gl = cnv.getContext('webgl');
 cnv.width = window.innerWidth;
 cnv.height = window.innerHeight;
 document.body.appendChild(cnv);
-const gl = cnv.getContext('webgl');
 
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource]);
-
-const arrays = {
-  position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
-};
+const vertices = [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0];
+const arrays = { position: vertices };
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 const uniforms = {
+  xRotMax: 90,
+  mouseSens: 0.0015,
+  movementSpeed: 0.05,
+  keyStates: { w: false, a: false, s: false, d: false },
+  rotation: vec2.create(),
   maxSteps: 200,
   minDist: 0,
   maxDist: 50,
   epsilon: 0.0001,
   resolution: vec2.fromValues(cnv.width, cnv.height),
   FOV: 45,
-  xRotMax: 90,
-  mouseSens: 0.0015,
-  movementSpeed: 0.05,
-  keyStates: { w: false, a: false, s: false, d: false },
   cameraPos: vec3.fromValues(0, 0, 0),
-  rotation: vec2.create(),
   rotationMatrix: mat4.create(),
   lightPos: vec3.fromValues(5, 5, 5),
   objectPos: vec3.fromValues(0, 0, -5),
@@ -94,6 +92,7 @@ function handleKey(e: KeyboardEvent) {
 
 function handleClick() {
   cnv.requestPointerLock();
+  gui.close();
 }
 
 function handleMouseMove(e: MouseEvent) {
@@ -102,11 +101,8 @@ function handleMouseMove(e: MouseEvent) {
     const factor = uniforms.mouseSens * uniforms.FOV * (Math.PI / 180);
     vec2.scale(movement, movement, factor);
     vec2.add(uniforms.rotation, uniforms.rotation, movement);
-    const range = uniforms.xRotMax * (Math.PI / 180);
-    uniforms.rotation[0] = Math.min(
-      Math.max(-range, uniforms.rotation[0]),
-      range
-    );
+    const lim = uniforms.xRotMax * (Math.PI / 180);
+    uniforms.rotation[0] = Math.min(Math.max(-lim, uniforms.rotation[0]), lim);
   }
 }
 
@@ -146,6 +142,6 @@ requestAnimationFrame(render);
 
 document.addEventListener('keydown', handleKey);
 document.addEventListener('keyup', handleKey);
-window.addEventListener('resize', handleResize);
 document.addEventListener('mousemove', handleMouseMove);
+window.addEventListener('resize', handleResize);
 cnv.addEventListener('click', handleClick);

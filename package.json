@@ -15,7 +15,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint && npm run pretty",
-      "post-commit": "git push -u origin HEAD && if git-branch-is master ; then npm run build && npm run deploy ; else exit 0 ; fi"
+      "post-commit": "git push -u origin HEAD && if git-branch-is master ; then npm run build && npm run deploy ; fi"
     }
   },
   "author": "Alex McDermott",
