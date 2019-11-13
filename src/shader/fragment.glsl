@@ -5,6 +5,7 @@ uniform float minDist;
 uniform float maxDist;
 uniform float epsilon;
 uniform vec2 resolution;
+uniform int subSamples;
 uniform float FOV;
 uniform vec3 cameraPos;
 uniform mat4 rotationMatrix;
@@ -38,8 +39,8 @@ float distToScene(vec3 dir) {
   }
 }
 
-vec3 calcDir() {
-  vec2 point = 2.0 * (gl_FragCoord.xy / resolution) - 1.0;
+vec3 calcDir(vec2 pixelPos) {
+  vec2 point = 2.0 * (pixelPos / resolution) - 1.0;
   point *= tan(radians(FOV / 2.0)) * vec2(resolution.x / resolution.y, 1);
   vec3 dir = vec3(point, -1.0);
   vec4 dirRotated = rotationMatrix * vec4(dir, 1.0);
@@ -64,13 +65,24 @@ vec3 calcPhong(vec3 hitPoint) {
   return (objectColour / vec3(255)) * diffuse + vec3(1.0) * specular;
 }
 
-void main() {
-  vec3 dir = calcDir();
+vec3 rayMarch(vec2 pixelPos) {
+  vec3 dir = calcDir(pixelPos);
   float dist = distToScene(dir);
   if (dist >= maxDist) {
-    gl_FragColor = vec4(worldColourFactor * (worldColour / vec3(255)), 1.0);
+    return worldColourFactor * worldColour / vec3(255);
   } else {
     vec3 hitPoint = cameraPos + dist * dir;
-    gl_FragColor = vec4(calcPhong(hitPoint), 1.0);
-  }    
+    return calcPhong(hitPoint);
+  }
 }
+
+void main() {
+  vec3 colour = vec3(0.0);
+  vec2 pixelSize = vec2(1, resolution.x / resolution.y);
+  for (int i = 0; i < 10000; i++) {
+    if (i == subSamples) break;
+    colour += rayMarch(gl_FragCoord.xy + vec2(i) * (pixelSize / vec2(subSamples + 1)));
+  }
+  gl_FragColor = vec4(colour / vec3(subSamples), 1.0);
+}
+

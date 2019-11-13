@@ -29,6 +29,7 @@ const uniforms = {
   maxDist: 50,
   epsilon: 0.0001,
   resolution: vec2.fromValues(cnv.width, cnv.height),
+  subSamples: 4,
   FOV: 45,
   cameraPos: vec3.fromValues(0, 0, 0),
   rotationMatrix: mat4.create(),
@@ -127,10 +128,11 @@ function render() {
 }
 
 const gui = new dat.GUI();
-gui.add(uniforms, 'FOV', 1, 179);
 gui.add(uniforms, 'xRotMax', 1, 90);
 gui.add(uniforms, 'mouseSens', 0, 0.005);
 gui.add(uniforms, 'movementSpeed', 0, 0.5);
+gui.add(uniforms, 'subSamples', 1, 10, 1);
+gui.add(uniforms, 'FOV', 1, 179);
 gui.addColor(uniforms, 'objectColour');
 gui.addColor(uniforms, 'worldColour');
 gui.add(uniforms, 'worldColourFactor', 0, 1);

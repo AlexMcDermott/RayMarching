@@ -1,6 +1,7 @@
 # RayMarching
 
 - Ray Marching implementation written in Typescript using WebGL
+- Implements supersampling to reduce jagged edges and noise
 - Uses Phong shading model
 
 ## Controls
