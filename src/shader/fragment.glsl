@@ -18,14 +18,40 @@ uniform float diffuseFactor;
 uniform float specularFactor;
 uniform float ambientMin;
 uniform float specularPower;
+uniform int maxIterations;
+uniform float fractalPower;
 
-float sphereSDF(vec3 samplePoint, vec3 pos, float radius) {
-  return length(samplePoint - pos) - radius;
+float sphereSDF(vec3 samplePoint, float radius) {
+  return length(samplePoint - objectPos) - radius;
+}
+
+float mandelbulbSDF(vec3 samplePoint) {
+  vec3 c = samplePoint - objectPos;
+  vec3 z = c;
+  float dr = 1.0;
+  float r = 0.0;
+
+  for (int i = 0; i < 10000; i++) {
+    if (i == maxIterations) break;
+    r = length(z);
+    if (r > 2.0) break;
+    float theta = acos(z.z / r);
+    float phi = atan(z.y, z.x);
+    dr = pow(r, fractalPower - 1.0) * fractalPower * dr + 1.0;
+
+    float zr = pow(r, fractalPower);
+    theta = theta * fractalPower;
+    phi = phi * fractalPower;
+
+    z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
+    z += c;
+  }
+  return 0.5 * log(r) * r / dr;
 }
 
 float sceneSDF(vec3 samplePoint) {
-  float sphere = sphereSDF(samplePoint, objectPos, 1.0);
-  return sphere;
+  // return sphereSDF(samplePoint, 1.0);
+  return mandelbulbSDF(samplePoint);
 }
 
 float distToScene(vec3 dir) {

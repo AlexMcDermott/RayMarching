@@ -9,8 +9,6 @@ import vertexSource from './shader/vertex.glsl';
 
 const cnv = document.createElement('canvas');
 const gl = cnv.getContext('webgl');
-cnv.width = window.innerWidth;
-cnv.height = window.innerHeight;
 document.body.appendChild(cnv);
 
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource]);
@@ -19,6 +17,10 @@ const arrays = { position: vertices };
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 const uniforms = {
+  isMoving: false,
+  isRotating: false,
+  highRes: false,
+  movingScale: 6,
   xRotMax: 90,
   mouseSens: 0.0015,
   movementSpeed: 0.05,
@@ -28,13 +30,13 @@ const uniforms = {
   minDist: 0,
   maxDist: 50,
   epsilon: 0.0001,
-  resolution: vec2.fromValues(cnv.width, cnv.height),
+  resolution: vec2.create(),
   subSamples: 4,
   FOV: 45,
   cameraPos: vec3.fromValues(0, 0, 0),
   rotationMatrix: mat4.create(),
   lightPos: vec3.fromValues(5, 5, 5),
-  objectPos: vec3.fromValues(0, 0, -5),
+  objectPos: vec3.fromValues(0, 0, -3),
   objectColour: [246, 189, 120],
   worldColour: [72, 92, 120],
   worldColourFactor: 0.5,
@@ -42,6 +44,8 @@ const uniforms = {
   specularFactor: 0.2,
   ambientMin: 0.2,
   specularPower: 10,
+  maxIterations: 10,
+  fractalPower: 8,
 };
 
 function updateRotation() {
@@ -80,13 +84,45 @@ function updatePosition() {
   vec3.multiply(uniforms.cameraPos, uniforms.cameraPos, [1, 0, 1]);
 }
 
+function update() {
+  if (uniforms.isMoving || uniforms.isRotating) {
+    setCanvasSize(uniforms.movingScale);
+    updateRotation();
+    updatePosition();
+    render();
+    uniforms.highRes = false;
+  } else if (!uniforms.highRes) {
+    setCanvasSize(1);
+    render();
+    uniforms.highRes = true;
+  }
+  requestAnimationFrame(update);
+}
+
+function render() {
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  gl.useProgram(programInfo.program);
+  twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+  twgl.setUniforms(programInfo, uniforms);
+  twgl.drawBufferInfo(gl, bufferInfo);
+}
+
+function setCanvasSize(scl: number) {
+  cnv.width = window.innerWidth / scl;
+  cnv.height = window.innerHeight / scl;
+  uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
+  cnv.style.width = '100vw';
+  cnv.style.height = '100vh';
+}
+
 function handleKey(e: KeyboardEvent) {
   if (!e.repeat) {
+    uniforms.isMoving = false;
     for (const key of Object.keys(uniforms.keyStates)) {
       if (e.key === key) {
         uniforms.keyStates[key] = !uniforms.keyStates[key];
-        break;
       }
+      uniforms.isMoving = uniforms.isMoving || uniforms.keyStates[key] === true;
     }
   }
 }
@@ -98,6 +134,7 @@ function handleClick() {
 
 function handleMouseMove(e: MouseEvent) {
   if (document.pointerLockElement === cnv) {
+    uniforms.isRotating = !(e.movementX === 0 && e.movementY === 0);
     const movement = vec2.fromValues(-e.movementY, -e.movementX);
     const factor = uniforms.mouseSens * uniforms.FOV * (Math.PI / 180);
     vec2.scale(movement, movement, factor);
@@ -108,26 +145,18 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleResize() {
-  cnv.width = window.innerWidth;
-  cnv.height = window.innerHeight;
-  uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
+  setCanvasSize(uniforms.movingScale);
+  render();
 }
 
-function render() {
-  if (document.pointerLockElement === cnv) {
-    updateRotation();
-    updatePosition();
-  }
-  twgl.resizeCanvasToDisplaySize(cnv);
-  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-  gl.useProgram(programInfo.program);
-  twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-  twgl.setUniforms(programInfo, uniforms);
-  twgl.drawBufferInfo(gl, bufferInfo);
-  requestAnimationFrame(render);
-}
+document.addEventListener('keydown', handleKey);
+document.addEventListener('keyup', handleKey);
+document.addEventListener('mousemove', handleMouseMove);
+window.addEventListener('resize', handleResize);
+cnv.addEventListener('click', handleClick);
 
 const gui = new dat.GUI();
+gui.add(uniforms, 'movingScale', 1, 10, 1);
 gui.add(uniforms, 'xRotMax', 1, 90);
 gui.add(uniforms, 'mouseSens', 0, 0.005);
 gui.add(uniforms, 'movementSpeed', 0, 0.5);
@@ -140,11 +169,7 @@ gui.add(uniforms, 'diffuseFactor', 0, 1);
 gui.add(uniforms, 'specularFactor', 0, 1);
 gui.add(uniforms, 'ambientMin', 0, 1);
 gui.add(uniforms, 'specularPower', 1, 50);
-requestAnimationFrame(render);
-console.log('test');
+gui.add(uniforms, 'maxIterations', 1, 100, 1);
+gui.add(uniforms, 'fractalPower', 1, 20);
 
-document.addEventListener('keydown', handleKey);
-document.addEventListener('keyup', handleKey);
-document.addEventListener('mousemove', handleMouseMove);
-window.addEventListener('resize', handleResize);
-cnv.addEventListener('click', handleClick);
+requestAnimationFrame(update);
