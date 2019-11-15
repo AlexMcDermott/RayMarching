@@ -26,6 +26,7 @@ const state = {
   movementSpeed: 0.05,
   keyStates: { w: false, a: false, s: false, d: false },
   rotation: vec2.create(),
+  controllers: [],
 };
 
 const uniforms = {
@@ -89,7 +90,9 @@ function updatePosition() {
 
 function update() {
   if (state.isMoving || state.isRotating) {
-    setCanvasSize(state.movingScale);
+    if (state.highRes) {
+      setCanvasSize(state.movingScale);
+    }
     updateRotation();
     updatePosition();
     render();
@@ -118,6 +121,32 @@ function setCanvasSize(scl: number) {
   cnv.style.height = '100vh';
 }
 
+function configureGui() {
+  const gui = new dat.GUI();
+  const control = gui.addFolder('Control');
+  control.add(state, 'xRotMax', 1, 90);
+  control.add(state, 'mouseSens', 0, 0.005);
+  control.add(state, 'movementSpeed', 0, 0.5);
+  const rendering = gui.addFolder('Rendering');
+  state.controllers.push(rendering.add(state, 'movingScale', 1, 10, 1));
+  state.controllers.push(rendering.add(uniforms, 'subSamples', 1, 10, 1));
+  state.controllers.push(rendering.add(uniforms, 'FOV', 1, 179));
+  const shading = gui.addFolder('Shading');
+  state.controllers.push(shading.addColor(uniforms, 'objectColour'));
+  state.controllers.push(shading.addColor(uniforms, 'worldColour'));
+  state.controllers.push(shading.add(uniforms, 'worldColourFactor', 0, 1));
+  state.controllers.push(shading.add(uniforms, 'diffuseFactor', 0, 1));
+  state.controllers.push(shading.add(uniforms, 'specularFactor', 0, 1));
+  state.controllers.push(shading.add(uniforms, 'ambientMin', 0, 1));
+  state.controllers.push(shading.add(uniforms, 'specularPower', 1, 50));
+  const fractal = gui.addFolder('Fractal');
+  state.controllers.push(fractal.add(uniforms, 'maxIterations', 1, 100, 1));
+  state.controllers.push(fractal.add(uniforms, 'fractalPower', 1, 20));
+  for (const controller of state.controllers) {
+    controller.onFinishChange(render);
+  }
+}
+
 function handleKey(e: KeyboardEvent) {
   if (!e.repeat) {
     state.isMoving = false;
@@ -132,7 +161,6 @@ function handleKey(e: KeyboardEvent) {
 
 function handleClick() {
   cnv.requestPointerLock();
-  gui.close();
 }
 
 function handleMouseMove(e: MouseEvent) {
@@ -158,25 +186,5 @@ document.addEventListener('mousemove', handleMouseMove);
 window.addEventListener('resize', handleResize);
 cnv.addEventListener('click', handleClick);
 
-const gui = new dat.GUI();
-const control = gui.addFolder('Control');
-control.add(state, 'xRotMax', 1, 90);
-control.add(state, 'mouseSens', 0, 0.005);
-control.add(state, 'movementSpeed', 0, 0.5);
-const rendering = gui.addFolder('Rendering');
-rendering.add(state, 'movingScale', 1, 10, 1);
-rendering.add(uniforms, 'subSamples', 1, 10, 1);
-rendering.add(uniforms, 'FOV', 1, 179);
-const shading = gui.addFolder('Shading');
-shading.addColor(uniforms, 'objectColour');
-shading.addColor(uniforms, 'worldColour');
-shading.add(uniforms, 'worldColourFactor', 0, 1);
-shading.add(uniforms, 'diffuseFactor', 0, 1);
-shading.add(uniforms, 'specularFactor', 0, 1);
-shading.add(uniforms, 'ambientMin', 0, 1);
-shading.add(uniforms, 'specularPower', 1, 50);
-const fractal = gui.addFolder('Fractal');
-fractal.add(uniforms, 'maxIterations', 1, 100, 1);
-fractal.add(uniforms, 'fractalPower', 1, 20);
-
+configureGui();
 requestAnimationFrame(update);
