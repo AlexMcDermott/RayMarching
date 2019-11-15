@@ -89,20 +89,24 @@ function updatePosition() {
 }
 
 function update() {
+  renderLogic();
+  requestAnimationFrame(update);
+}
+
+function renderLogic() {
   if (state.isMoving || state.isRotating) {
     if (state.highRes) {
       setCanvasSize(state.movingScale);
+      state.highRes = false;
     }
     updateRotation();
     updatePosition();
     render();
-    state.highRes = false;
   } else if (!state.highRes) {
     setCanvasSize(1);
     render();
     state.highRes = true;
   }
-  requestAnimationFrame(update);
 }
 
 function render() {
@@ -176,8 +180,9 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleResize() {
+  state.highRes = false;
   setCanvasSize(state.movingScale);
-  render();
+  renderLogic();
 }
 
 document.addEventListener('keydown', handleKey);
