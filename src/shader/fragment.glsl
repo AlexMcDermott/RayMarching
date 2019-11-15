@@ -18,11 +18,17 @@ uniform float diffuseFactor;
 uniform float specularFactor;
 uniform float ambientMin;
 uniform float specularPower;
+uniform bool renderFractal;
 uniform int maxIterations;
 uniform float fractalPower;
+uniform float sphereRadius;
 
-float sphereSDF(vec3 samplePoint, float radius) {
-  return length(samplePoint - objectPos) - radius;
+float planeSDF(vec3 samplePoint, float height) {
+  return dot(samplePoint + vec3(0.0, -height, 0.0), vec3(0.0, 1.0, 0.0));
+}
+
+float sphereSDF(vec3 samplePoint) {
+  return length(samplePoint - objectPos) - sphereRadius;
 }
 
 float mandelbulbSDF(vec3 samplePoint) {
@@ -50,8 +56,13 @@ float mandelbulbSDF(vec3 samplePoint) {
 }
 
 float sceneSDF(vec3 samplePoint) {
-  // return sphereSDF(samplePoint, 1.0);
-  return mandelbulbSDF(samplePoint);
+  if (renderFractal) {
+    return mandelbulbSDF(samplePoint);
+  } else {
+    float plane = planeSDF(samplePoint, -sphereRadius);
+    float sphere = sphereSDF(samplePoint);
+    return min(plane, sphere);
+  }
 }
 
 float distToScene(vec3 dir) {

@@ -48,8 +48,10 @@ const uniforms = {
   specularFactor: 0.2,
   ambientMin: 0.2,
   specularPower: 10,
+  renderFractal: true,
   maxIterations: 10,
   fractalPower: 8,
+  sphereRadius: 0.6,
 };
 
 function updateRotation() {
@@ -118,8 +120,10 @@ function render() {
 }
 
 function setCanvasSize(scl: number) {
-  cnv.width = window.innerWidth / scl;
-  cnv.height = window.innerHeight / scl;
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  cnv.width = uniforms.renderFractal ? width / scl : width;
+  cnv.height = uniforms.renderFractal ? height / scl : height;
   uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
   cnv.style.width = '100vw';
   cnv.style.height = '100vh';
@@ -133,6 +137,8 @@ function configureGui() {
   control.add(state, 'movementSpeed', 0, 0.5);
   const rendering = gui.addFolder('Rendering');
   state.controllers.push(rendering.add(state, 'movingScale', 1, 10, 1));
+  state.controllers.push(rendering.add(uniforms, 'maxSteps', 1, 1000, 1));
+  state.controllers.push(rendering.add(uniforms, 'maxDist', 1, 200, 1));
   state.controllers.push(rendering.add(uniforms, 'subSamples', 1, 10, 1));
   state.controllers.push(rendering.add(uniforms, 'FOV', 1, 179));
   const shading = gui.addFolder('Shading');
@@ -143,9 +149,11 @@ function configureGui() {
   state.controllers.push(shading.add(uniforms, 'specularFactor', 0, 1));
   state.controllers.push(shading.add(uniforms, 'ambientMin', 0, 1));
   state.controllers.push(shading.add(uniforms, 'specularPower', 1, 50));
-  const fractal = gui.addFolder('Fractal');
-  state.controllers.push(fractal.add(uniforms, 'maxIterations', 1, 100, 1));
-  state.controllers.push(fractal.add(uniforms, 'fractalPower', 1, 20));
+  const sdf = gui.addFolder('SDF');
+  state.controllers.push(sdf.add(uniforms, 'renderFractal'));
+  state.controllers.push(sdf.add(uniforms, 'maxIterations', 1, 100, 1));
+  state.controllers.push(sdf.add(uniforms, 'fractalPower', 1, 20));
+  state.controllers.push(sdf.add(uniforms, 'sphereRadius', 0, 5));
   for (const controller of state.controllers) {
     controller.onFinishChange(render);
   }
