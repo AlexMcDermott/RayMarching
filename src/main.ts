@@ -16,7 +16,7 @@ const vertices = [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0];
 const arrays = { position: vertices };
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
-const uniforms = {
+const state = {
   isMoving: false,
   isRotating: false,
   highRes: false,
@@ -26,6 +26,9 @@ const uniforms = {
   movementSpeed: 0.05,
   keyStates: { w: false, a: false, s: false, d: false },
   rotation: vec2.create(),
+};
+
+const uniforms = {
   maxSteps: 200,
   minDist: 0,
   maxDist: 50,
@@ -51,8 +54,8 @@ const uniforms = {
 function updateRotation() {
   const xRotMatrix = mat4.create();
   const yRotMatrix = mat4.create();
-  mat4.fromXRotation(xRotMatrix, uniforms.rotation[0]);
-  mat4.fromYRotation(yRotMatrix, uniforms.rotation[1]);
+  mat4.fromXRotation(xRotMatrix, state.rotation[0]);
+  mat4.fromYRotation(yRotMatrix, state.rotation[1]);
   mat4.multiply(uniforms.rotationMatrix, yRotMatrix, xRotMatrix);
 }
 
@@ -65,19 +68,19 @@ function updatePosition() {
   vec3.cross(up, right, forward);
   vec3.normalize(forward, forward);
   vec3.normalize(right, right);
-  vec3.scale(forward, forward, uniforms.movementSpeed);
-  vec3.scale(right, right, uniforms.movementSpeed);
+  vec3.scale(forward, forward, state.movementSpeed);
+  vec3.scale(right, right, state.movementSpeed);
 
-  if (uniforms.keyStates.w) {
+  if (state.keyStates.w) {
     vec3.add(uniforms.cameraPos, uniforms.cameraPos, forward);
   }
-  if (uniforms.keyStates.a) {
+  if (state.keyStates.a) {
     vec3.subtract(uniforms.cameraPos, uniforms.cameraPos, right);
   }
-  if (uniforms.keyStates.s) {
+  if (state.keyStates.s) {
     vec3.subtract(uniforms.cameraPos, uniforms.cameraPos, forward);
   }
-  if (uniforms.keyStates.d) {
+  if (state.keyStates.d) {
     vec3.add(uniforms.cameraPos, uniforms.cameraPos, right);
   }
 
@@ -85,16 +88,16 @@ function updatePosition() {
 }
 
 function update() {
-  if (uniforms.isMoving || uniforms.isRotating) {
-    setCanvasSize(uniforms.movingScale);
+  if (state.isMoving || state.isRotating) {
+    setCanvasSize(state.movingScale);
     updateRotation();
     updatePosition();
     render();
-    uniforms.highRes = false;
-  } else if (!uniforms.highRes) {
+    state.highRes = false;
+  } else if (!state.highRes) {
     setCanvasSize(1);
     render();
-    uniforms.highRes = true;
+    state.highRes = true;
   }
   requestAnimationFrame(update);
 }
@@ -117,12 +120,12 @@ function setCanvasSize(scl: number) {
 
 function handleKey(e: KeyboardEvent) {
   if (!e.repeat) {
-    uniforms.isMoving = false;
-    for (const key of Object.keys(uniforms.keyStates)) {
+    state.isMoving = false;
+    for (const key of Object.keys(state.keyStates)) {
       if (e.key === key) {
-        uniforms.keyStates[key] = !uniforms.keyStates[key];
+        state.keyStates[key] = !state.keyStates[key];
       }
-      uniforms.isMoving = uniforms.isMoving || uniforms.keyStates[key] === true;
+      state.isMoving = state.isMoving || state.keyStates[key] === true;
     }
   }
 }
@@ -134,18 +137,18 @@ function handleClick() {
 
 function handleMouseMove(e: MouseEvent) {
   if (document.pointerLockElement === cnv) {
-    uniforms.isRotating = !(e.movementX === 0 && e.movementY === 0);
+    state.isRotating = !(e.movementX === 0 && e.movementY === 0);
     const movement = vec2.fromValues(-e.movementY, -e.movementX);
-    const factor = uniforms.mouseSens * uniforms.FOV * (Math.PI / 180);
+    const factor = state.mouseSens * uniforms.FOV * (Math.PI / 180);
     vec2.scale(movement, movement, factor);
-    vec2.add(uniforms.rotation, uniforms.rotation, movement);
-    const lim = uniforms.xRotMax * (Math.PI / 180);
-    uniforms.rotation[0] = Math.min(Math.max(-lim, uniforms.rotation[0]), lim);
+    vec2.add(state.rotation, state.rotation, movement);
+    const lim = state.xRotMax * (Math.PI / 180);
+    state.rotation[0] = Math.min(Math.max(-lim, state.rotation[0]), lim);
   }
 }
 
 function handleResize() {
-  setCanvasSize(uniforms.movingScale);
+  setCanvasSize(state.movingScale);
   render();
 }
 
@@ -157,11 +160,11 @@ cnv.addEventListener('click', handleClick);
 
 const gui = new dat.GUI();
 const control = gui.addFolder('Control');
-control.add(uniforms, 'xRotMax', 1, 90);
-control.add(uniforms, 'mouseSens', 0, 0.005);
-control.add(uniforms, 'movementSpeed', 0, 0.5);
+control.add(state, 'xRotMax', 1, 90);
+control.add(state, 'mouseSens', 0, 0.005);
+control.add(state, 'movementSpeed', 0, 0.5);
 const rendering = gui.addFolder('Rendering');
-rendering.add(uniforms, 'movingScale', 1, 10, 1);
+rendering.add(state, 'movingScale', 1, 10, 1);
 rendering.add(uniforms, 'subSamples', 1, 10, 1);
 rendering.add(uniforms, 'FOV', 1, 179);
 const shading = gui.addFolder('Shading');
