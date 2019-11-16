@@ -4,6 +4,7 @@
     "no-console": false,
     "object-literal-sort-keys": false,
     "interface-name": [true, "never-prefix"],
-    "no-shadowed-variable": false
+    "no-shadowed-variable": false,
+    "curly": [true, "ignore-same-line"]
   }
 }

@@ -10,6 +10,8 @@ import vertexSource from './shader/vertex.glsl';
 const cnv = document.createElement('canvas');
 const gl = cnv.getContext('webgl');
 document.body.appendChild(cnv);
+cnv.style.width = '100vw';
+cnv.style.height = '100vh';
 
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource]);
 const vertices = [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0];
@@ -97,17 +99,13 @@ function update() {
 
 function renderLogic() {
   if (state.isMoving || state.isRotating) {
-    if (state.highRes) {
-      setCanvasSize(state.movingScale);
-      state.highRes = false;
-    }
+    if (state.highRes) setCanvasSize(state.movingScale);
     updateRotation();
     updatePosition();
     render();
   } else if (!state.highRes) {
     setCanvasSize(1);
     render();
-    state.highRes = true;
   }
 }
 
@@ -120,13 +118,12 @@ function render() {
 }
 
 function setCanvasSize(scl: number) {
+  state.highRes = scl === 1 ? true : false;
   const width = window.innerWidth;
   const height = window.innerHeight;
   cnv.width = uniforms.renderFractal ? width / scl : width;
   cnv.height = uniforms.renderFractal ? height / scl : height;
   uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
-  cnv.style.width = '100vw';
-  cnv.style.height = '100vh';
 }
 
 function configureGui() {
@@ -139,6 +136,7 @@ function configureGui() {
   state.controllers.push(rendering.add(state, 'movingScale', 1, 10, 1));
   state.controllers.push(rendering.add(uniforms, 'maxSteps', 1, 1000, 1));
   state.controllers.push(rendering.add(uniforms, 'maxDist', 1, 200, 1));
+  state.controllers.push(rendering.add(uniforms, 'epsilon', 0, 0.001));
   state.controllers.push(rendering.add(uniforms, 'subSamples', 1, 10, 1));
   state.controllers.push(rendering.add(uniforms, 'FOV', 1, 179));
   const shading = gui.addFolder('Shading');
@@ -188,7 +186,6 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleResize() {
-  state.highRes = false;
   setCanvasSize(state.movingScale);
   renderLogic();
 }
