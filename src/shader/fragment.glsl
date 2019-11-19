@@ -12,8 +12,10 @@ uniform mat4 rotationMatrix;
 uniform vec3 lightPos;
 uniform vec3 objectPos;
 uniform vec3 objectColour;
-uniform vec3 worldColour;
-uniform float worldColourFactor;
+uniform bool dynamicBg;
+uniform float bgColourFactor;
+uniform vec3 bgLightColour;
+uniform vec3 bgDarkColour;
 uniform float diffuseFactor;
 uniform float specularFactor;
 uniform float ambientMin;
@@ -92,7 +94,7 @@ vec3 estimateNormal(vec3 p) {
   ));
 }
 
-vec3 calcPhong(vec3 hitPoint) {
+vec3 phong(vec3 hitPoint) {
   vec3 normal = estimateNormal(hitPoint);
   vec3 toLight = normalize(lightPos - hitPoint);
   vec3 toCamera = normalize(cameraPos - hitPoint);
@@ -102,24 +104,43 @@ vec3 calcPhong(vec3 hitPoint) {
   return (objectColour / vec3(255)) * diffuse + vec3(1.0) * specular;
 }
 
+vec3 backgroundColour(vec2 pixelPos, vec3 dir) {
+  if (dynamicBg) {
+    float yPercent = float(pixelPos.y) / resolution.y;
+    vec3 forward = normalize(vec3(dir.x, 0.0, dir.z));
+    float anglePercent = dot(forward, dir);
+    vec3 dark = vec3(63, 113, 184) / vec3(255);
+    vec3 light = vec3(192, 219, 236) / vec3(255);
+    float factor = yPercent * anglePercent;
+    return bgColourFactor * (factor * bgLightColour / vec3(255) + (1.0 - factor) * bgDarkColour / vec3(255));
+  } else {
+    return bgColourFactor * bgDarkColour / vec3(255);
+  }
+}
+
 vec3 rayMarch(vec2 pixelPos) {
   vec3 dir = calcDir(pixelPos);
   float dist = distToScene(dir);
   if (dist >= maxDist) {
-    return worldColourFactor * worldColour / vec3(255);
+    return backgroundColour(pixelPos, dir);
   } else {
     vec3 hitPoint = cameraPos + dist * dir;
-    return calcPhong(hitPoint);
+    return phong(hitPoint);
   }
 }
 
-void main() {
+vec3 antiAliasing(vec2 pixelPos) {
   vec3 colour = vec3(0.0);
   vec2 pixelSize = vec2(1, resolution.x / resolution.y);
   for (int i = 0; i < 10000; i++) {
     if (i == subSamples) break;
-    colour += rayMarch(gl_FragCoord.xy + vec2(i) * (pixelSize / vec2(subSamples + 1)));
+    colour += rayMarch(pixelPos + vec2(i) * (pixelSize / vec2(subSamples + 1)));
   }
-  gl_FragColor = vec4(colour / vec3(subSamples), 1.0);
+  return colour / vec3(subSamples);
+}
+
+void main() {
+  vec3 colour = antiAliasing(gl_FragCoord.xy);
+  gl_FragColor = vec4(colour, 1.0);
 }
 

@@ -44,8 +44,10 @@ const uniforms = {
   lightPos: vec3.fromValues(5, 5, 5),
   objectPos: vec3.fromValues(0, 0, -3),
   objectColour: [246, 189, 120],
-  worldColour: [72, 92, 120],
-  worldColourFactor: 0.5,
+  dynamicBg: true,
+  bgColourFactor: 0.8,
+  bgLightColour: [192, 219, 236],
+  bgDarkColour: [63, 113, 184],
   diffuseFactor: 1,
   specularFactor: 0.2,
   ambientMin: 0.2,
@@ -141,8 +143,10 @@ function configureGui() {
   state.controllers.push(rendering.add(uniforms, 'FOV', 1, 179));
   const shading = gui.addFolder('Shading');
   state.controllers.push(shading.addColor(uniforms, 'objectColour'));
-  state.controllers.push(shading.addColor(uniforms, 'worldColour'));
-  state.controllers.push(shading.add(uniforms, 'worldColourFactor', 0, 1));
+  state.controllers.push(shading.add(uniforms, 'dynamicBg'));
+  state.controllers.push(shading.add(uniforms, 'bgColourFactor', 0, 1));
+  state.controllers.push(shading.addColor(uniforms, 'bgLightColour'));
+  state.controllers.push(shading.addColor(uniforms, 'bgDarkColour'));
   state.controllers.push(shading.add(uniforms, 'diffuseFactor', 0, 1));
   state.controllers.push(shading.add(uniforms, 'specularFactor', 0, 1));
   state.controllers.push(shading.add(uniforms, 'ambientMin', 0, 1));
