@@ -162,13 +162,15 @@ function configureGui() {
 }
 
 function handleKey(e: KeyboardEvent) {
-  if (!e.repeat) {
-    state.isMoving = false;
-    for (const key of Object.keys(state.keyStates)) {
-      if (e.key === key) {
-        state.keyStates[key] = !state.keyStates[key];
+  if (document.pointerLockElement === cnv) {
+    if (!e.repeat) {
+      state.isMoving = false;
+      for (const key of Object.keys(state.keyStates)) {
+        if (e.key === key) {
+          state.keyStates[key] = !state.keyStates[key];
+        }
+        state.isMoving = state.isMoving || state.keyStates[key] === true;
       }
-      state.isMoving = state.isMoving || state.keyStates[key] === true;
     }
   }
 }
