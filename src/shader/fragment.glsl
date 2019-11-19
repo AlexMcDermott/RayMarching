@@ -109,8 +109,6 @@ vec3 backgroundColour(vec2 pixelPos, vec3 dir) {
     float yPercent = float(pixelPos.y) / resolution.y;
     vec3 forward = normalize(vec3(dir.x, 0.0, dir.z));
     float anglePercent = dot(forward, dir);
-    vec3 dark = vec3(63, 113, 184) / vec3(255);
-    vec3 light = vec3(192, 219, 236) / vec3(255);
     float factor = yPercent * anglePercent;
     return bgColourFactor * (factor * bgLightColour / vec3(255) + (1.0 - factor) * bgDarkColour / vec3(255));
   } else {
