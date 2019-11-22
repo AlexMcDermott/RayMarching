@@ -105,17 +105,19 @@ vec3 phong(vec3 hitPoint) {
 }
 
 vec3 backgroundColour(vec3 dir) {
+  vec3 colour = vec3(0.0);
   if (dynamicBg) {
     vec3 forward = normalize(vec3(dir.x, 0.0, dir.z));
     float factor = dot(forward, dir);
     if (dir.y >= 0.0) {
-      return bgColourFactor * (bgLightColour * factor + bgDarkColour * (1.0 - factor)) / vec3(255);
+      colour = bgLightColour * factor + bgDarkColour * (1.0 - factor);
     } else {
-      return bgColourFactor * factor * bgLightColour / vec3(255);
+      colour = factor * bgLightColour;
     }
   } else {
-    return bgColourFactor * bgDarkColour / vec3(255);
+    colour = (bgLightColour + bgDarkColour) / vec3(2.0);
   }
+  return bgColourFactor * colour / vec3(255);
 }
 
 vec3 rayMarch(vec2 pixelPos) {
