@@ -104,13 +104,15 @@ vec3 phong(vec3 hitPoint) {
   return (objectColour / vec3(255)) * diffuse + vec3(1.0) * specular;
 }
 
-vec3 backgroundColour(vec2 pixelPos, vec3 dir) {
+vec3 backgroundColour(vec3 dir) {
   if (dynamicBg) {
-    float yPercent = float(pixelPos.y) / resolution.y;
     vec3 forward = normalize(vec3(dir.x, 0.0, dir.z));
-    float anglePercent = dot(forward, dir);
-    float factor = yPercent * anglePercent;
-    return bgColourFactor * (factor * bgLightColour / vec3(255) + (1.0 - factor) * bgDarkColour / vec3(255));
+    float factor = dot(forward, dir);
+    if (dir.y >= 0.0) {
+      return bgColourFactor * (bgLightColour * factor + bgDarkColour * (1.0 - factor)) / vec3(255);
+    } else {
+      return bgColourFactor * factor * bgLightColour / vec3(255);
+    }
   } else {
     return bgColourFactor * bgDarkColour / vec3(255);
   }
@@ -120,7 +122,7 @@ vec3 rayMarch(vec2 pixelPos) {
   vec3 dir = calcDir(pixelPos);
   float dist = distToScene(dir);
   if (dist >= maxDist) {
-    return backgroundColour(pixelPos, dir);
+    return backgroundColour(dir);
   } else {
     vec3 hitPoint = cameraPos + dist * dir;
     return phong(hitPoint);
