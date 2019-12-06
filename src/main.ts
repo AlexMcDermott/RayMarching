@@ -32,14 +32,13 @@ const state = {
 };
 
 const uniforms = {
-  maxSteps: 200,
+  maxSteps: 500,
   minDist: 0,
   maxDist: 50,
-  epsilon: 0.0001,
+  epsilon: 0.0002,
   resolution: vec2.create(),
   subSamples: 4,
   FOV: 45,
-  cameraPos: vec3.fromValues(0, 0, 0),
   rotationMatrix: mat4.create(),
   lightPos: vec3.fromValues(5, 5, 5),
   objectPos: vec3.fromValues(0, 0, -3),
@@ -79,19 +78,19 @@ function updatePosition() {
   vec3.scale(right, right, state.movementSpeed);
 
   if (state.keyStates.w) {
-    vec3.add(uniforms.cameraPos, uniforms.cameraPos, forward);
+    vec3.subtract(uniforms.objectPos, uniforms.objectPos, forward);
   }
   if (state.keyStates.a) {
-    vec3.subtract(uniforms.cameraPos, uniforms.cameraPos, right);
+    vec3.add(uniforms.objectPos, uniforms.objectPos, right);
   }
   if (state.keyStates.s) {
-    vec3.subtract(uniforms.cameraPos, uniforms.cameraPos, forward);
+    vec3.add(uniforms.objectPos, uniforms.objectPos, forward);
   }
   if (state.keyStates.d) {
-    vec3.add(uniforms.cameraPos, uniforms.cameraPos, right);
+    vec3.subtract(uniforms.objectPos, uniforms.objectPos, right);
   }
 
-  vec3.multiply(uniforms.cameraPos, uniforms.cameraPos, [1, 0, 1]);
+  vec3.multiply(uniforms.objectPos, uniforms.objectPos, [1, 0, 1]);
 }
 
 function update() {

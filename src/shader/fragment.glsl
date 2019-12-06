@@ -7,7 +7,6 @@ uniform float epsilon;
 uniform vec2 resolution;
 uniform int subSamples;
 uniform float FOV;
-uniform vec3 cameraPos;
 uniform mat4 rotationMatrix;
 uniform vec3 lightPos;
 uniform vec3 objectPos;
@@ -71,7 +70,7 @@ float distToScene(vec3 dir) {
   float depth = minDist;
   for (int i = 0; i < 10000; i++) {
     if (i == maxSteps) return maxDist;
-    float dist = sceneSDF(cameraPos + depth * dir);
+    float dist = sceneSDF(depth * dir);
     if (dist < epsilon) return depth;
     depth += dist;
     if (depth >= maxDist) return maxDist;
@@ -97,7 +96,7 @@ vec3 estimateNormal(vec3 p) {
 vec3 phong(vec3 hitPoint) {
   vec3 normal = estimateNormal(hitPoint);
   vec3 toLight = normalize(lightPos - hitPoint);
-  vec3 toCamera = normalize(cameraPos - hitPoint);
+  vec3 toCamera = normalize(-hitPoint);
   vec3 lightReflected = 2.0 * dot(normal, toLight) * normal - toLight;
   float diffuse = diffuseFactor * clamp(dot(normal, toLight), ambientMin, 1.0);
   float specular = specularFactor * pow(clamp(dot(toCamera, lightReflected), 0.0, 1.0), specularPower);
@@ -126,7 +125,7 @@ vec3 rayMarch(vec2 pixelPos) {
   if (dist >= maxDist) {
     return backgroundColour(dir);
   } else {
-    vec3 hitPoint = cameraPos + dist * dir;
+    vec3 hitPoint = dist * dir;
     return phong(hitPoint);
   }
 }
