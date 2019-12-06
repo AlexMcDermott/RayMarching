@@ -26,7 +26,14 @@ const state = {
   xRotMax: 90,
   mouseSens: 0.0015,
   movementSpeed: 0.05,
-  keyStates: { w: false, a: false, s: false, d: false },
+  keyStates: {
+    KeyW: false,
+    KeyA: false,
+    KeyS: false,
+    KeyD: false,
+    Space: false,
+    ShiftLeft: false,
+  },
   rotation: vec2.create(),
   controllers: [],
   resizingTimeoutId: 0,
@@ -77,21 +84,26 @@ function updatePosition() {
   vec3.normalize(right, right);
   vec3.scale(forward, forward, state.movementSpeed);
   vec3.scale(right, right, state.movementSpeed);
+  vec3.scale(up, [0, 1, 0], state.movementSpeed);
 
-  if (state.keyStates.w) {
+  if (state.keyStates.KeyW) {
     vec3.subtract(uniforms.objectPos, uniforms.objectPos, forward);
   }
-  if (state.keyStates.a) {
+  if (state.keyStates.KeyA) {
     vec3.add(uniforms.objectPos, uniforms.objectPos, right);
   }
-  if (state.keyStates.s) {
+  if (state.keyStates.KeyS) {
     vec3.add(uniforms.objectPos, uniforms.objectPos, forward);
   }
-  if (state.keyStates.d) {
+  if (state.keyStates.KeyD) {
     vec3.subtract(uniforms.objectPos, uniforms.objectPos, right);
   }
-
-  vec3.multiply(uniforms.objectPos, uniforms.objectPos, [1, 0, 1]);
+  if (state.keyStates.Space) {
+    vec3.sub(uniforms.objectPos, uniforms.objectPos, up);
+  }
+  if (state.keyStates.ShiftLeft) {
+    vec3.add(uniforms.objectPos, uniforms.objectPos, up);
+  }
 }
 
 function update() {
@@ -166,7 +178,7 @@ function handleKey(e: KeyboardEvent) {
     if (!e.repeat) {
       state.isMoving = false;
       for (const key of Object.keys(state.keyStates)) {
-        if (e.key === key) {
+        if (e.code === key) {
           state.keyStates[key] = !state.keyStates[key];
         }
         state.isMoving = state.isMoving || state.keyStates[key] === true;
