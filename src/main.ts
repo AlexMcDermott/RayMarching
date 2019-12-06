@@ -29,6 +29,7 @@ const state = {
   keyStates: { w: false, a: false, s: false, d: false },
   rotation: vec2.create(),
   controllers: [],
+  resizingTimeoutId: 0,
 };
 
 const uniforms = {
@@ -191,8 +192,11 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleResize() {
-  setCanvasSize(state.movingScale);
-  renderLogic();
+  clearTimeout(state.resizingTimeoutId);
+  state.resizingTimeoutId = setTimeout(() => {
+    setCanvasSize(state.movingScale);
+    renderLogic();
+  }, 25);
 }
 
 document.addEventListener('keydown', handleKey);
