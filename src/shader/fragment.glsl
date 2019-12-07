@@ -66,23 +66,10 @@ float sceneSDF(vec3 samplePoint) {
   }
 }
 
-float distToScene(vec3 dir) {
-  float depth = minDist;
-  for (int i = 0; i < 10000; i++) {
-    if (i == maxSteps) return maxDist;
-    float dist = sceneSDF(depth * dir);
-    if (dist < epsilon) return depth;
-    depth += dist;
-    if (depth >= maxDist) return maxDist;
-  }
-}
-
 vec3 calcDir(vec2 pixelPos) {
   vec2 point = 2.0 * (pixelPos / resolution) - 1.0;
   point *= tan(radians(FOV / 2.0)) * vec2(resolution.x / resolution.y, 1);
-  vec3 dir = vec3(point, -1.0);
-  vec4 dirRotated = rotationMatrix * vec4(dir, 1.0);
-  return normalize(dirRotated.xyz);
+  return normalize((rotationMatrix * vec4(point, -1.0, 1)).xyz);
 }
 
 vec3 estimateNormal(vec3 p) {
@@ -119,13 +106,19 @@ vec3 backgroundColour(vec3 dir) {
   return bgColourFactor * colour / vec3(255);
 }
 
-vec3 rayMarch(vec2 pixelPos) {
-  vec3 dir = calcDir(pixelPos);
-  float dist = distToScene(dir);
-  if (dist >= maxDist) {
+vec3 rayMarch(vec3 dir) {
+  float depth = minDist;
+  for (int i = 0; i < 10000; i++) {
+    float dist = sceneSDF(depth * dir);
+    depth += dist;
+    if (i == maxSteps) break;
+    if (dist < epsilon) break;
+    if (depth >= maxDist) break;
+  }
+  if (depth >= maxDist) {
     return backgroundColour(dir);
   } else {
-    vec3 hitPoint = dist * dir;
+    vec3 hitPoint = depth * dir;
     return phong(hitPoint);
   }
 }
@@ -135,7 +128,8 @@ vec3 antiAliasing(vec2 pixelPos) {
   vec2 pixelSize = vec2(1, resolution.x / resolution.y);
   for (int i = 0; i < 10000; i++) {
     if (i == subSamples) break;
-    colour += rayMarch(pixelPos + vec2(i) * (pixelSize / vec2(subSamples + 1)));
+    vec3 dir = calcDir(pixelPos + vec2(i) * (pixelSize / vec2(subSamples + 1)));
+    colour += rayMarch(dir);
   }
   return colour / vec3(subSamples);
 }
@@ -144,4 +138,3 @@ void main() {
   vec3 colour = antiAliasing(gl_FragCoord.xy);
   gl_FragColor = vec4(colour, 1.0);
 }
-
