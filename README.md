@@ -7,6 +7,7 @@
 ## Controls
 
 - Click to enter first person mode
-- WASD to move
+- WASD to strafe and move forward / back
+- Space to fly up, Left Shift to fly down
 - Move mouse to look around
 - Escape to exit first person mode
