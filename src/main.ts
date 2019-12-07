@@ -193,7 +193,7 @@ function handleClick() {
 
 function handleMouseMove(e: MouseEvent) {
   if (document.pointerLockElement === cnv) {
-    state.isRotating = !(e.movementX === 0 && e.movementY === 0);
+    state.isRotating = Math.abs(e.movementX) + Math.abs(e.movementY) > 1;
     const movement = vec2.fromValues(-e.movementY, -e.movementX);
     const factor = state.mouseSens * uniforms.FOV * (Math.PI / 180);
     vec2.scale(movement, movement, factor);
