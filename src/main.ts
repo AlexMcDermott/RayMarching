@@ -37,6 +37,9 @@ const state = {
   rotation: vec2.create(),
   controllers: [],
   resizingTimeoutId: 0,
+  slowDown: true,
+  slowDownThreshold: 2.5,
+  slowDownStrength: 0.85,
 };
 
 const uniforms = {
@@ -84,9 +87,12 @@ function updatePosition() {
   vec3.normalize(forward, forward);
   vec3.normalize(right, right);
   vec3.normalize(up, up);
-  vec3.scale(forward, forward, state.movementFactor);
-  vec3.scale(right, right, state.movementFactor);
-  vec3.scale(up, up, state.movementFactor);
+  const diff = vec3.length(uniforms.objectPos) - state.slowDownThreshold;
+  const distFactor = diff < 0 ? (1 - state.slowDownStrength) ** -diff : 1;
+  const factor = state.movementFactor * (state.slowDown ? distFactor : 1);
+  vec3.scale(forward, forward, factor);
+  vec3.scale(right, right, factor);
+  vec3.scale(up, up, factor);
   const ks = state.keyStates;
   if (ks.KeyW) vec3.subtract(uniforms.objectPos, uniforms.objectPos, forward);
   if (ks.KeyA) vec3.add(uniforms.objectPos, uniforms.objectPos, right);
@@ -136,6 +142,9 @@ function configureGui() {
   control.add(state, 'xRotMax', 1, 90);
   control.add(state, 'mouseSens', 0, 0.005);
   control.add(state, 'movementFactor', 0, 0.5);
+  control.add(state, 'slowDown');
+  control.add(state, 'slowDownThreshold', 0, 3);
+  control.add(state, 'slowDownStrength', 0, 1);
   const rendering = gui.addFolder('Rendering');
   state.controllers.push(rendering.add(state, 'movingScale', 1, 10, 1));
   state.controllers.push(rendering.add(uniforms, 'maxSteps', 1, 1000, 1));
