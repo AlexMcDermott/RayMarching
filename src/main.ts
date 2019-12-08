@@ -76,34 +76,23 @@ function updateRotation() {
 function updatePosition() {
   const forward = vec3.fromValues(0, 0, -1);
   const right = vec3.create();
-  const up = vec3.create();
+  const up = vec3.fromValues(0, 1, 0);
   vec3.transformMat4(forward, forward, uniforms.rotationMatrix);
-  vec3.cross(right, forward, [0, 1, 0]);
+  vec3.cross(right, forward, up);
   vec3.cross(up, right, forward);
   vec3.normalize(forward, forward);
   vec3.normalize(right, right);
   vec3.scale(forward, forward, state.movementSpeed);
   vec3.scale(right, right, state.movementSpeed);
-  vec3.scale(up, [0, 1, 0], state.movementSpeed);
-
-  if (state.keyStates.KeyW) {
-    vec3.subtract(uniforms.objectPos, uniforms.objectPos, forward);
-  }
-  if (state.keyStates.KeyA) {
-    vec3.add(uniforms.objectPos, uniforms.objectPos, right);
-  }
-  if (state.keyStates.KeyS) {
-    vec3.add(uniforms.objectPos, uniforms.objectPos, forward);
-  }
-  if (state.keyStates.KeyD) {
-    vec3.subtract(uniforms.objectPos, uniforms.objectPos, right);
-  }
-  if (state.keyStates.Space) {
-    vec3.sub(uniforms.objectPos, uniforms.objectPos, up);
-  }
-  if (state.keyStates.ShiftLeft) {
-    vec3.add(uniforms.objectPos, uniforms.objectPos, up);
-  }
+  vec3.scale(up, up, state.movementSpeed);
+  vec3.multiply(up, up, [0, 1, 0]);
+  const ks = state.keyStates;
+  if (ks.KeyW) vec3.subtract(uniforms.objectPos, uniforms.objectPos, forward);
+  if (ks.KeyA) vec3.add(uniforms.objectPos, uniforms.objectPos, right);
+  if (ks.KeyS) vec3.add(uniforms.objectPos, uniforms.objectPos, forward);
+  if (ks.KeyD) vec3.subtract(uniforms.objectPos, uniforms.objectPos, right);
+  if (ks.Space) vec3.sub(uniforms.objectPos, uniforms.objectPos, up);
+  if (ks.ShiftLeft) vec3.add(uniforms.objectPos, uniforms.objectPos, up);
 }
 
 function update() {
