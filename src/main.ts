@@ -25,7 +25,7 @@ const state = {
   movingScale: 6,
   xRotMax: 90,
   mouseSens: 0.0015,
-  movementSpeed: 0.05,
+  movementFactor: 0.05,
   keyStates: {
     KeyW: false,
     KeyA: false,
@@ -80,12 +80,13 @@ function updatePosition() {
   vec3.transformMat4(forward, forward, uniforms.rotationMatrix);
   vec3.cross(right, forward, up);
   vec3.cross(up, right, forward);
+  vec3.multiply(up, up, [0, 1, 0]);
   vec3.normalize(forward, forward);
   vec3.normalize(right, right);
-  vec3.scale(forward, forward, state.movementSpeed);
-  vec3.scale(right, right, state.movementSpeed);
-  vec3.scale(up, up, state.movementSpeed);
-  vec3.multiply(up, up, [0, 1, 0]);
+  vec3.normalize(up, up);
+  vec3.scale(forward, forward, state.movementFactor);
+  vec3.scale(right, right, state.movementFactor);
+  vec3.scale(up, up, state.movementFactor);
   const ks = state.keyStates;
   if (ks.KeyW) vec3.subtract(uniforms.objectPos, uniforms.objectPos, forward);
   if (ks.KeyA) vec3.add(uniforms.objectPos, uniforms.objectPos, right);
@@ -134,7 +135,7 @@ function configureGui() {
   const control = gui.addFolder('Control');
   control.add(state, 'xRotMax', 1, 90);
   control.add(state, 'mouseSens', 0, 0.005);
-  control.add(state, 'movementSpeed', 0, 0.5);
+  control.add(state, 'movementFactor', 0, 0.5);
   const rendering = gui.addFolder('Rendering');
   state.controllers.push(rendering.add(state, 'movingScale', 1, 10, 1));
   state.controllers.push(rendering.add(uniforms, 'maxSteps', 1, 1000, 1));
