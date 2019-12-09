@@ -29,15 +29,14 @@ float planeSDF(vec3 samplePoint, float height) {
 }
 
 float sphereSDF(vec3 samplePoint) {
-  return length(samplePoint - objectPos) - sphereRadius;
+  return length(samplePoint) - sphereRadius;
 }
 
 float mandelbulbSDF(vec3 samplePoint) {
-  vec3 c = samplePoint - objectPos;
+  vec3 c = samplePoint;
   vec3 z = c;
   float dr = 1.0;
   float r = 0.0;
-
   for (int i = 0; i < 10000; i++) {
     if (i == maxIterations) break;
     r = length(z);
@@ -45,11 +44,9 @@ float mandelbulbSDF(vec3 samplePoint) {
     float theta = acos(z.z / r);
     float phi = atan(z.y, z.x);
     dr = pow(r, fractalPower - 1.0) * fractalPower * dr + 1.0;
-
     float zr = pow(r, fractalPower);
     theta = theta * fractalPower;
     phi = phi * fractalPower;
-
     z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
     z += c;
   }
@@ -57,6 +54,7 @@ float mandelbulbSDF(vec3 samplePoint) {
 }
 
 float sceneSDF(vec3 samplePoint) {
+  samplePoint -= objectPos;
   if (renderFractal) {
     return mandelbulbSDF(samplePoint);
   } else {

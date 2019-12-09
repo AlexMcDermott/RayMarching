@@ -129,10 +129,8 @@ function render() {
 
 function setCanvasSize(scl: number) {
   state.highRes = scl === 1 ? true : false;
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  cnv.width = uniforms.renderFractal ? width / scl : width;
-  cnv.height = uniforms.renderFractal ? height / scl : height;
+  cnv.width = window.innerWidth / scl;
+  cnv.height = window.innerHeight / scl;
   uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
 }
 
