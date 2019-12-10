@@ -18,30 +18,6 @@ const vertices = [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0];
 const arrays = { position: vertices };
 const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
-const state = {
-  isMoving: false,
-  isRotating: false,
-  highRes: false,
-  movingScale: 6,
-  xRotMax: 90,
-  mouseSens: 0.0015,
-  movementFactor: 0.05,
-  keyStates: {
-    KeyW: false,
-    KeyA: false,
-    KeyS: false,
-    KeyD: false,
-    Space: false,
-    ShiftLeft: false,
-  },
-  rotation: vec2.create(),
-  controllers: [],
-  resizingTimeoutId: 0,
-  slowDown: true,
-  slowDownThreshold: 2.5,
-  slowDownStrength: 0.85,
-};
-
 const uniforms = {
   maxSteps: 500,
   minDist: 0,
@@ -66,6 +42,33 @@ const uniforms = {
   maxIterations: 10,
   fractalPower: 8,
   sphereRadius: 0.6,
+};
+
+const state = {
+  isMoving: false,
+  isRotating: false,
+  highRes: false,
+  movingScale: 6,
+  xRotMax: 90,
+  mouseSens: 0.0015,
+  movementFactor: 0.05,
+  keyStates: {
+    KeyW: false,
+    KeyA: false,
+    KeyS: false,
+    KeyD: false,
+    Space: false,
+    ShiftLeft: false,
+  },
+  rotation: vec2.create(),
+  controllers: [],
+  resizingTimeoutId: 0,
+  slowDown: true,
+  slowDownThreshold: 2.5,
+  slowDownStrength: 0.85,
+  animatePower: false,
+  animateSpeed: 0.001,
+  fractalPowerOriginal: uniforms.fractalPower,
 };
 
 function updateRotation() {
@@ -102,14 +105,22 @@ function updatePosition() {
   if (ks.ShiftLeft) vec3.add(uniforms.objectPos, uniforms.objectPos, up);
 }
 
-function update() {
+function updatePower(t: DOMHighResTimeStamp) {
+  if (state.animatePower) {
+    const pow = state.fractalPowerOriginal;
+    uniforms.fractalPower = pow * Math.sin(t * state.animateSpeed) + 2 * pow;
+  }
+}
+
+function update(t: DOMHighResTimeStamp) {
   renderLogic();
+  updatePower(t);
   requestAnimationFrame(update);
 }
 
 function renderLogic() {
-  if (state.isMoving || state.isRotating) {
-    if (state.highRes) setCanvasSize(state.movingScale);
+  if (state.isMoving || state.isRotating || state.animatePower) {
+    if (state.highRes || state.animatePower) setCanvasSize(state.movingScale);
     updateRotation();
     updatePosition();
     render();
@@ -163,7 +174,9 @@ function configureGui() {
   const sdf = gui.addFolder('SDF');
   state.controllers.push(sdf.add(uniforms, 'renderFractal'));
   state.controllers.push(sdf.add(uniforms, 'maxIterations', 1, 100, 1));
-  state.controllers.push(sdf.add(uniforms, 'fractalPower', 1, 20));
+  state.controllers.push(sdf.add(uniforms, 'fractalPower', 1, 20).listen());
+  state.controllers.push(sdf.add(state, 'animatePower'));
+  state.controllers.push(sdf.add(state, 'animateSpeed', 0.0001, 0.001));
   state.controllers.push(sdf.add(uniforms, 'sphereRadius', 0, 5));
   for (const controller of state.controllers) {
     controller.onFinishChange(render);
