@@ -10,8 +10,8 @@ import vertexSource from './shader/vertex.glsl';
 const cnv = document.createElement('canvas');
 const gl = cnv.getContext('webgl');
 document.body.appendChild(cnv);
-cnv.style.width = '100vw';
-cnv.style.height = '100vh';
+cnv.style.width = '100%';
+cnv.style.height = '100%';
 
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource]);
 const vertices = [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0];
