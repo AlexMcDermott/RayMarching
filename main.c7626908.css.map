@@ -1,1 +1,0 @@
-{"version":3,"sources":["main.css"],"names":[],"mappings":"AAAA,UAEE,QAAS,CACT,eAAgB,CAChB,SAAU,CACV,cACF","file":"main.c7626908.css","sourceRoot":"../src","sourcesContent":["html,\nbody {\n  margin: 0;\n  overflow: hidden;\n  padding: 0;\n  position: fixed;\n}\n"]}
