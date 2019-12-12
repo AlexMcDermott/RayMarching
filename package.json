@@ -5,11 +5,11 @@
     "lint-md": "markdownlint --ignore node_modules .",
     "lint": "npm run lint-ts && npm run lint-md",
     "pretty": "prettier --write --config .prettierrc.json '**/*'",
-    "start": "trap 'exit 0' SIGINT ; parcel src/index.html --open",
-    "poststart": "npm run cleanup",
+    "start": "trap 'exit 0' SIGINT ; parcel -d tmp src/index.html --open",
+    "poststart": "npm run cleanup -- tmp",
     "build": "parcel build --public-url /$(basename $(pwd))/ src/index.html",
-    "deploy": "gh-pages -d dist -m \"Built from $(git rev-parse --short HEAD) on master\" ; npm run cleanup",
-    "cleanup": "rm -rf dist && gh-pages-clean",
+    "deploy": "gh-pages -d dist -m \"Built from $(git rev-parse --short HEAD) on master\" ; npm run cleanup -- dist",
+    "cleanup": "gh-pages-clean && rm -rf",
     "setup": "rm -rf .git && > README.md && git init && npm install"
   },
   "husky": {

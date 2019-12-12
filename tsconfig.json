@@ -11,5 +11,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*"],
-  "exclude": [".git", ".vscode", "dist", "node_modules"]
+  "exclude": [".git", ".vscode", "dist", "node_modules", "tmp"]
 }
