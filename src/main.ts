@@ -10,8 +10,6 @@ import vertexSource from './shader/vertex.glsl';
 const cnv = document.createElement('canvas');
 const gl = cnv.getContext('webgl');
 document.body.appendChild(cnv);
-cnv.style.width = String(window.innerWidth);
-cnv.style.height = String(window.innerHeight);
 
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource]);
 const vertices = [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0];
@@ -140,9 +138,13 @@ function render() {
 
 function setCanvasSize(scl: number) {
   state.highRes = scl === 1 ? true : false;
-  cnv.width = window.innerWidth / scl;
-  cnv.height = window.innerHeight / scl;
-  uniforms.resolution = vec2.fromValues(cnv.width, cnv.height);
+  const width = window.innerWidth / scl;
+  const height = window.innerHeight / scl;
+  cnv.width = width;
+  cnv.height = height;
+  cnv.style.width = String(window.innerWidth);
+  cnv.style.height = String(window.innerHeight);
+  uniforms.resolution = vec2.fromValues(width, height);
 }
 
 function configureGui() {
@@ -194,6 +196,7 @@ function handleKey(e: KeyboardEvent) {
 }
 
 function handleClick() {
+  if ('ontouchstart' in window) return;
   cnv.requestPointerLock();
 }
 
