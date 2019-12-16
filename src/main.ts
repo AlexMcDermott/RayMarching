@@ -67,6 +67,8 @@ const state = {
   animatePower: false,
   animateSpeed: 0.001,
   fractalPowerOriginal: uniforms.fractalPower,
+  touchDevice: 'ontouchstart' in window,
+  pTouch: null,
 };
 
 function updateRotation() {
@@ -196,20 +198,42 @@ function handleKey(e: KeyboardEvent) {
 }
 
 function handleClick() {
-  if ('ontouchstart' in window) return;
+  if (state.touchDevice) return;
   cnv.requestPointerLock();
 }
 
+function calcRotation(movement: vec2) {
+  const length = vec2.length(movement);
+  state.isRotating = state.touchDevice ? state.isRotating : length > 1;
+  const factor = -state.mouseSens * uniforms.FOV * (Math.PI / 180);
+  vec2.scale(movement, movement, factor);
+  vec2.add(state.rotation, state.rotation, movement);
+  const lim = state.xRotMax * (Math.PI / 180);
+  state.rotation[0] = Math.min(Math.max(-lim, state.rotation[0]), lim);
+}
+
 function handleMouseMove(e: MouseEvent) {
+  if (state.touchDevice) return;
   if (document.pointerLockElement === cnv) {
-    state.isRotating = Math.abs(e.movementX) + Math.abs(e.movementY) > 1;
-    const movement = vec2.fromValues(-e.movementY, -e.movementX);
-    const factor = state.mouseSens * uniforms.FOV * (Math.PI / 180);
-    vec2.scale(movement, movement, factor);
-    vec2.add(state.rotation, state.rotation, movement);
-    const lim = state.xRotMax * (Math.PI / 180);
-    state.rotation[0] = Math.min(Math.max(-lim, state.rotation[0]), lim);
+    const movement = vec2.fromValues(e.movementY, e.movementX);
+    calcRotation(movement);
   }
+}
+
+function handleTouchMove(e: TouchEvent) {
+  state.isRotating = true;
+  const mainTouch = e.targetTouches[0];
+  const touch = vec2.fromValues(mainTouch.pageY, mainTouch.pageX);
+  if (state.pTouch === null) state.pTouch = touch;
+  const movement = vec2.create();
+  vec2.subtract(movement, touch, state.pTouch);
+  state.pTouch = touch;
+  calcRotation(movement);
+}
+
+function handleTouchEnd() {
+  state.pTouch = null;
+  state.isRotating = false;
 }
 
 function handleResize() {
@@ -223,6 +247,8 @@ function handleResize() {
 document.addEventListener('keydown', handleKey);
 document.addEventListener('keyup', handleKey);
 document.addEventListener('mousemove', handleMouseMove);
+cnv.addEventListener('touchmove', handleTouchMove);
+cnv.addEventListener('touchend', handleTouchEnd);
 window.addEventListener('resize', handleResize);
 cnv.addEventListener('click', handleClick);
 
