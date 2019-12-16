@@ -10,4 +10,5 @@
 - WASD to strafe and move forward / back
 - Space to fly up, Left Shift to fly down
 - Move mouse to look around
+- Tap and drag to look around on mobile
 - Escape to exit first person mode
