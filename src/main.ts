@@ -118,6 +118,15 @@ function update(t: DOMHighResTimeStamp) {
   requestAnimationFrame(update);
 }
 
+function calcRotation(movement: vec2) {
+  if (!state.touchDevice) state.isRotating = vec2.length(movement) > 1;
+  const factor = -state.mouseSens * uniforms.FOV * (Math.PI / 180);
+  vec2.scale(movement, movement, factor);
+  vec2.add(state.rotation, state.rotation, movement);
+  const lim = state.xRotMax * (Math.PI / 180);
+  state.rotation[0] = Math.min(Math.max(-lim, state.rotation[0]), lim);
+}
+
 function renderLogic() {
   if (state.isMoving || state.isRotating || state.animatePower) {
     if (state.highRes || state.animatePower) setCanvasSize(state.movingScale);
@@ -202,16 +211,6 @@ function handleClick() {
   cnv.requestPointerLock();
 }
 
-function calcRotation(movement: vec2) {
-  const length = vec2.length(movement);
-  state.isRotating = state.touchDevice ? state.isRotating : length > 1;
-  const factor = -state.mouseSens * uniforms.FOV * (Math.PI / 180);
-  vec2.scale(movement, movement, factor);
-  vec2.add(state.rotation, state.rotation, movement);
-  const lim = state.xRotMax * (Math.PI / 180);
-  state.rotation[0] = Math.min(Math.max(-lim, state.rotation[0]), lim);
-}
-
 function handleMouseMove(e: MouseEvent) {
   if (state.touchDevice) return;
   if (document.pointerLockElement === cnv) {
@@ -221,14 +220,17 @@ function handleMouseMove(e: MouseEvent) {
 }
 
 function handleTouchMove(e: TouchEvent) {
-  state.isRotating = true;
   const mainTouch = e.targetTouches[0];
   const touch = vec2.fromValues(mainTouch.pageY, mainTouch.pageX);
-  if (state.pTouch === null) state.pTouch = touch;
-  const movement = vec2.create();
-  vec2.subtract(movement, touch, state.pTouch);
-  state.pTouch = touch;
-  calcRotation(movement);
+  if (state.pTouch === null) {
+    state.pTouch = touch;
+    state.isRotating = true;
+  } else {
+    const movement = vec2.create();
+    vec2.subtract(movement, touch, state.pTouch);
+    state.pTouch = touch;
+    calcRotation(movement);
+  }
 }
 
 function handleTouchEnd() {
