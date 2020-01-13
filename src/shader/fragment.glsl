@@ -111,12 +111,8 @@ vec3 rayMarch(vec3 dir) {
     if (dist < epsilon) break;
     if (depth >= maxDist) break;
   }
-  if (depth >= maxDist) {
-    return backgroundColour(dir);
-  } else {
-    vec3 hitPoint = depth * dir;
-    return phong(hitPoint);
-  }
+  float factor = clamp(depth / maxDist, 0.0, 1.0);
+  return phong(depth * dir) * (1.0 - factor) + backgroundColour(dir) * factor;
 }
 
 vec3 antiAliasing(vec2 pixelPos) {
