@@ -82,37 +82,41 @@ vec3 phong(vec3 hitPoint) {
   vec3 normal = estimateNormal(hitPoint);
   vec3 toLight = normalize(lightPos - hitPoint);
   vec3 toCamera = normalize(-hitPoint);
-  vec3 lightReflected = 2.0 * dot(normal, toLight) * normal - toLight;
+  vec3 toHitPoint = normalize(hitPoint - lightPos);
+  vec3 reflected = reflect(toHitPoint, normal);
   float diffuse = diffuseFactor * clamp(dot(normal, toLight), ambientMin, 1.0);
-  float specular = specularFactor * pow(clamp(dot(toCamera, lightReflected), 0.0, 1.0), specularPower);
+  float specular = specularFactor * pow(clamp(dot(toCamera, reflected), 0.0, 1.0), specularPower);
   return (objectColour / vec3(255)) * diffuse + vec3(1.0) * specular;
 }
 
 vec3 backgroundColour(vec3 dir) {
   vec3 colour = (bgLightColour + bgDarkColour) / vec3(2.0);
   if (dynamicBg) {
-    vec3 forward = normalize(vec3(dir.x, 0.0, dir.z));
-    float factor = dot(forward, dir);
-    if (dir.y >= 0.0) {
-      colour = bgLightColour * factor + bgDarkColour * (1.0 - factor);
-    } else {
-      colour = factor * bgLightColour;
-    }
+    float factor = dot(normalize(vec3(dir.x, 0.0, dir.z)), dir);
+    vec3 baseColour = bgLightColour * factor;
+    colour = (dir.y >= 0.0 ? baseColour + bgDarkColour * (1.0 - factor) : baseColour);
   }
   return bgColourFactor * colour / vec3(255);
 }
 
-vec3 rayMarch(vec3 dir) {
-  float depth = minDist;
+void rayMarch(vec3 dir, inout float depth, inout bool hit) {
+  depth = minDist;
+  hit = true;
   for (int i = 0; i < 10000; i++) {
+    if (depth >= maxDist) hit = false;
+    if (i == maxSteps || !hit) break;
     float dist = sceneSDF(depth * dir);
+    if (dist <= epsilon) break;
     depth += dist;
-    if (i == maxSteps) break;
-    if (dist < epsilon) break;
-    if (depth >= maxDist) break;
   }
-  float factor = clamp(depth / maxDist, 0.0, 1.0);
-  return phong(depth * dir) * (1.0 - factor) + backgroundColour(dir) * factor;
+}
+
+vec3 calcColour(vec3 dir) {
+  float depth;
+  bool hit;
+  rayMarch(dir, depth, hit);
+  float fogFactor = clamp(depth / maxDist, 0.0, 1.0);
+  return phong(depth * dir) * (1.0 - fogFactor) + backgroundColour(dir) * fogFactor;
 }
 
 vec3 antiAliasing(vec2 pixelPos) {
@@ -121,7 +125,7 @@ vec3 antiAliasing(vec2 pixelPos) {
   for (int i = 0; i < 10000; i++) {
     if (i == subSamples) break;
     vec3 dir = calcDir(pixelPos + vec2(i) * (pixelSize / vec2(subSamples + 1)));
-    colour += rayMarch(dir);
+    colour += calcColour(dir);
   }
   return colour / vec3(subSamples);
 }
