@@ -100,8 +100,8 @@ vec3 backgroundColour(vec3 dir) {
   return bgColourFactor * colour / vec3(255);
 }
 
-bool rayMarch(vec3 origin, vec3 dir, inout vec3 hitPoint) {
-  float depth = minDist;
+bool rayMarch(vec3 origin, vec3 dir, inout float depth, inout vec3 hitPoint) {
+  depth = minDist;
   for (int i = 0; i < 10000; i++) {
     if (depth >= maxDist || i == maxSteps) return false;
     float dist = sceneSDF(origin + depth * dir);
@@ -114,18 +114,18 @@ bool rayMarch(vec3 origin, vec3 dir, inout vec3 hitPoint) {
 vec3 shade(vec3 dir) {
   bool hit = true;
   vec3 origin;
+  float depth;
   vec3 hitPoint;
   vec3 colour;
   int bounces;
   for (int i = 0; i < 10000; i++) {
-    if (i == maxBounces || !hit) break;
-    hit = rayMarch(origin, dir, hitPoint);
-    colour += (hit ? phong(hitPoint) : backgroundColour(dir));
-    bounces++;
+    if (i == maxBounces || !hit) return colour / vec3(i);
+    hit = rayMarch(origin, dir, depth, hitPoint);
+    float fogFactor = clamp(depth / maxDist, 0.0, 1.0);
+    colour += phong(hitPoint) * (1.0 - fogFactor) + backgroundColour(dir) * fogFactor;
     dir = reflect(dir, estimateNormal(hitPoint));
     origin = hitPoint + dir * epsilon;
   }
-  return colour / vec3(bounces);
 }
 
 vec3 antiAliasing(vec2 pixelPos) {
