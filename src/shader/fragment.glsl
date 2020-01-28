@@ -23,6 +23,7 @@ uniform bool renderFractal;
 uniform int maxIterations;
 uniform float fractalPower;
 uniform float sphereRadius;
+uniform int maxBounces;
 
 float planeSDF(vec3 samplePoint, float height) {
   return dot(samplePoint + vec3(0.0, -height, 0.0), vec3(0.0, 1.0, 0.0));
@@ -100,23 +101,19 @@ vec3 backgroundColour(vec3 dir) {
 }
 
 bool rayMarch(vec3 origin, vec3 dir, inout vec3 hitPoint) {
-  bool hit = true;
   float depth = minDist;
   for (int i = 0; i < 10000; i++) {
-    if (depth >= maxDist || i == maxSteps) hit = false;
-    if (!hit) break;
+    if (depth >= maxDist || i == maxSteps) return false;
     float dist = sceneSDF(origin + depth * dir);
-    if (dist < epsilon) break;
+    if (dist < epsilon) return true;
     depth += dist;
+    hitPoint = origin + depth * dir;
   }
-  hitPoint = origin + depth * dir;
-  return hit;
 }
 
 vec3 shade(vec3 dir) {
-  int maxBounces = 2;
   bool hit = true;
-  vec3 origin = vec3(0.0);
+  vec3 origin;
   vec3 hitPoint;
   vec3 colour;
   int bounces;

@@ -40,6 +40,7 @@ const uniforms = {
   maxIterations: 10,
   fractalPower: 8,
   sphereRadius: 0.6,
+  maxBounces: 1,
 };
 
 const state = {
@@ -184,6 +185,7 @@ function configureGui() {
   state.controllers.push(shading.add(uniforms, 'specularFactor', 0, 1));
   state.controllers.push(shading.add(uniforms, 'ambientMin', 0, 1));
   state.controllers.push(shading.add(uniforms, 'specularPower', 1, 50));
+  state.controllers.push(shading.add(uniforms, 'maxBounces', 1, 5, 1));
   const sdf = gui.addFolder('SDF');
   state.controllers.push(sdf.add(uniforms, 'renderFractal'));
   state.controllers.push(sdf.add(uniforms, 'maxIterations', 1, 100, 1));
