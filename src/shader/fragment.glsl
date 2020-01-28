@@ -86,7 +86,7 @@ vec3 phong(vec3 hitPoint) {
   vec3 reflected = reflect(toHitPoint, normal);
   float diffuse = diffuseFactor * clamp(dot(normal, toLight), ambientMin, 1.0);
   float specular = specularFactor * pow(clamp(dot(toCamera, reflected), 0.0, 1.0), specularPower);
-  return (objectColour / vec3(255)) * diffuse + vec3(1.0) * specular;
+  return (objectColour / vec3(255)) * diffuse + vec3(specular);
 }
 
 vec3 backgroundColour(vec3 dir) {
@@ -99,33 +99,45 @@ vec3 backgroundColour(vec3 dir) {
   return bgColourFactor * colour / vec3(255);
 }
 
-void rayMarch(vec3 dir, inout float depth, inout bool hit) {
-  depth = minDist;
-  hit = true;
+bool rayMarch(vec3 origin, vec3 dir, inout vec3 hitPoint) {
+  bool hit = true;
+  float depth = minDist;
   for (int i = 0; i < 10000; i++) {
-    if (depth >= maxDist) hit = false;
-    if (i == maxSteps || !hit) break;
-    float dist = sceneSDF(depth * dir);
-    if (dist <= epsilon) break;
+    if (depth >= maxDist || i == maxSteps) hit = false;
+    if (!hit) break;
+    float dist = sceneSDF(origin + depth * dir);
+    if (dist < epsilon) break;
     depth += dist;
   }
+  hitPoint = origin + depth * dir;
+  return hit;
 }
 
-vec3 calcColour(vec3 dir) {
-  float depth;
-  bool hit;
-  rayMarch(dir, depth, hit);
-  float fogFactor = clamp(depth / maxDist, 0.0, 1.0);
-  return phong(depth * dir) * (1.0 - fogFactor) + backgroundColour(dir) * fogFactor;
+vec3 shade(vec3 dir) {
+  int maxBounces = 2;
+  bool hit = true;
+  vec3 origin = vec3(0.0);
+  vec3 hitPoint;
+  vec3 colour;
+  int bounces;
+  for (int i = 0; i < 10000; i++) {
+    if (i == maxBounces || !hit) break;
+    hit = rayMarch(origin, dir, hitPoint);
+    colour += (hit ? phong(hitPoint) : backgroundColour(dir));
+    bounces++;
+    dir = reflect(dir, estimateNormal(hitPoint));
+    origin = hitPoint + dir * epsilon;
+  }
+  return colour / vec3(bounces);
 }
 
 vec3 antiAliasing(vec2 pixelPos) {
-  vec3 colour = vec3(0.0);
+  vec3 colour;
   vec2 pixelSize = vec2(1, resolution.x / resolution.y);
   for (int i = 0; i < 10000; i++) {
     if (i == subSamples) break;
     vec3 dir = calcDir(pixelPos + vec2(i) * (pixelSize / vec2(subSamples + 1)));
-    colour += calcColour(dir);
+    colour += shade(dir);
   }
   return colour / vec3(subSamples);
 }
