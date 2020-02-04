@@ -24,6 +24,10 @@ uniform int maxIterations;
 uniform float fractalPower;
 uniform float sphereRadius;
 uniform int maxBounces;
+uniform bool aoEnable;
+uniform float aoStepSize;
+uniform float aoFactor;
+uniform int aoIterations;
 
 float planeSDF(vec3 samplePoint, float height) {
   return dot(samplePoint + vec3(0.0, -height, 0.0), vec3(0.0, 1.0, 0.0));
@@ -111,6 +115,16 @@ bool rayMarch(vec3 origin, vec3 dir, inout float depth, inout vec3 hitPoint) {
   }
 }
 
+float ambientOcclusion(vec3 origin, vec3 normal) {
+  if (!aoEnable) return 1.0;
+  float ao;
+  for (int i = 1; i < 10000; i++) {
+    if (i == aoIterations + 1) return 1.0 - ao * aoFactor;
+    float dist = aoStepSize * float(i);
+    ao += max(0.0, (dist - sceneSDF(origin + normal * dist)) / dist);
+  }
+}
+
 vec3 shade(vec3 dir) {
   bool hit = true;
   vec3 origin;
@@ -121,9 +135,11 @@ vec3 shade(vec3 dir) {
   for (int i = 0; i < 10000; i++) {
     if (i == maxBounces || !hit) return colour / vec3(i);
     hit = rayMarch(origin, dir, depth, hitPoint);
+    vec3 hitPointNormal = estimateNormal(hitPoint);
     float fogFactor = clamp(depth / maxDist, 0.0, 1.0);
-    colour += phong(hitPoint) * (1.0 - fogFactor) + backgroundColour(dir) * fogFactor;
-    dir = reflect(dir, estimateNormal(hitPoint));
+    vec3 c = phong(hitPoint) * (1.0 - fogFactor) + backgroundColour(dir) * fogFactor;
+    colour += c * ambientOcclusion(hitPoint, hitPointNormal);
+    dir = reflect(dir, hitPointNormal);
     origin = hitPoint + dir * epsilon;
   }
 }

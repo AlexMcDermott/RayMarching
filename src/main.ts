@@ -41,6 +41,10 @@ const uniforms = {
   fractalPower: 8,
   sphereRadius: 0.6,
   maxBounces: 1,
+  aoEnable: true,
+  aoStepSize: 2.5,
+  aoFactor: 0.7,
+  aoIterations: 2,
 };
 
 const state = {
@@ -186,6 +190,10 @@ function configureGui() {
   state.controllers.push(shading.add(uniforms, 'ambientMin', 0, 1));
   state.controllers.push(shading.add(uniforms, 'specularPower', 1, 50));
   state.controllers.push(shading.add(uniforms, 'maxBounces', 1, 5, 1));
+  state.controllers.push(shading.add(uniforms, 'aoEnable'));
+  state.controllers.push(shading.add(uniforms, 'aoStepSize', 0, 10));
+  state.controllers.push(shading.add(uniforms, 'aoFactor', 0, 1));
+  state.controllers.push(shading.add(uniforms, 'aoIterations', 1, 5, 1));
   const sdf = gui.addFolder('SDF');
   state.controllers.push(sdf.add(uniforms, 'renderFractal'));
   state.controllers.push(sdf.add(uniforms, 'maxIterations', 1, 100, 1));
