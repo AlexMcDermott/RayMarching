@@ -42,8 +42,8 @@ const uniforms = {
   sphereRadius: 0.6,
   maxBounces: 1,
   aoEnable: true,
-  aoStepSize: 2.5,
-  aoFactor: 0.7,
+  aoStepSize: 0.05,
+  aoFactor: 0.15,
   aoIterations: 2,
 };
 
