@@ -18,9 +18,9 @@ const bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
 const uniforms = {
   maxSteps: 500,
-  minDist: 0,
+  minDist: 0.001,
   maxDist: 50,
-  epsilon: 0.0002,
+  epsilon: 0.0001,
   resolution: vec2.create(),
   subSamples: 4,
   FOV: 45,
@@ -42,9 +42,11 @@ const uniforms = {
   sphereRadius: 0.6,
   maxBounces: 1,
   aoEnable: true,
-  aoStepSize: 0.05,
+  aoStepSize: 0.025,
   aoFactor: 0.15,
   aoIterations: 2,
+  enableShadows: true,
+  shadowFactor: 0.3,
 };
 
 const state = {
@@ -175,6 +177,7 @@ function configureGui() {
   const rendering = gui.addFolder('Rendering');
   state.controllers.push(rendering.add(state, 'movingScale', 1, 10, 1));
   state.controllers.push(rendering.add(uniforms, 'maxSteps', 1, 1000, 1));
+  state.controllers.push(rendering.add(uniforms, 'minDist', 0, 1));
   state.controllers.push(rendering.add(uniforms, 'maxDist', 1, 200, 1));
   state.controllers.push(rendering.add(uniforms, 'epsilon', 0, 0.001));
   state.controllers.push(rendering.add(uniforms, 'subSamples', 1, 10, 1));
@@ -194,6 +197,8 @@ function configureGui() {
   state.controllers.push(shading.add(uniforms, 'aoStepSize', 0, 10));
   state.controllers.push(shading.add(uniforms, 'aoFactor', 0, 1));
   state.controllers.push(shading.add(uniforms, 'aoIterations', 1, 5, 1));
+  state.controllers.push(shading.add(uniforms, 'enableShadows'));
+  state.controllers.push(shading.add(uniforms, 'shadowFactor', 0, 1));
   const sdf = gui.addFolder('SDF');
   state.controllers.push(sdf.add(uniforms, 'renderFractal'));
   state.controllers.push(sdf.add(uniforms, 'maxIterations', 1, 100, 1));
