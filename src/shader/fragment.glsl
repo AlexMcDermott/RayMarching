@@ -23,6 +23,7 @@ uniform bool renderFractal;
 uniform int maxIterations;
 uniform float fractalPower;
 uniform float sphereRadius;
+uniform bool fogEnable;
 uniform int maxBounces;
 uniform bool aoEnable;
 uniform float aoStepSize;
@@ -136,16 +137,17 @@ float hardShadow(vec3 origin, vec3 normal) {
   return (hit ? 1.0 - shadowFactor : 1.0);
 }
 
-vec3 fog(vec3 colour, vec3 bgColour, float depth) {
+vec3 fog(vec3 colour, vec3 bgColour, bool hit, float depth) {
+  if (!fogEnable) return (hit ? colour : bgColour);
   float fogFactor = clamp(depth / maxDist, 0.0, 1.0);
   return colour * (1.0 - fogFactor) + bgColour * fogFactor;
 }
 
-vec3 shade(vec3 dir, vec3 hitPoint, vec3 normal, float depth) {
+vec3 shade(vec3 dir, bool hit, vec3 hitPoint, vec3 normal, float depth) {
   float ao = ambientOcclusion(hitPoint, normal);
   float shadow = hardShadow(hitPoint, normal);
   vec3 colour = phong(hitPoint) * ao * shadow;
-  return fog(colour, backgroundColour(dir), depth);
+  return fog(colour, backgroundColour(dir), hit, depth);
 }
 
 vec3 lightBounces(vec3 dir) {
@@ -159,7 +161,7 @@ vec3 lightBounces(vec3 dir) {
     if (i == maxBounces || !hit) return colour / vec3(i);
     hit = rayMarch(origin, dir, depth, hitPoint);
     vec3 normal = estimateNormal(hitPoint);
-    colour += shade(dir, hitPoint, normal, depth);
+    colour += shade(dir, hit, hitPoint, normal, depth);
     dir = reflect(dir, normal);
     origin = hitPoint + epsilon * normal;
   }

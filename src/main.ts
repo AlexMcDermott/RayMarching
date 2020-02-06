@@ -40,6 +40,7 @@ const uniforms = {
   maxIterations: 10,
   fractalPower: 8,
   sphereRadius: 0.6,
+  fogEnable: true,
   maxBounces: 1,
   aoEnable: true,
   aoStepSize: 0.025,
@@ -192,6 +193,7 @@ function configureGui() {
   state.controllers.push(shading.add(uniforms, 'specularFactor', 0, 1));
   state.controllers.push(shading.add(uniforms, 'ambientMin', 0, 1));
   state.controllers.push(shading.add(uniforms, 'specularPower', 1, 50));
+  state.controllers.push(shading.add(uniforms, 'fogEnable'));
   state.controllers.push(shading.add(uniforms, 'maxBounces', 1, 5, 1));
   state.controllers.push(shading.add(uniforms, 'aoEnable'));
   state.controllers.push(shading.add(uniforms, 'aoStepSize', 0, 10));
