@@ -54,7 +54,7 @@ const state = {
   isMoving: false,
   isRotating: false,
   highRes: false,
-  movingScale: 6,
+  movingScale: 10,
   xRotMax: 90,
   mouseSens: 0.0015,
   movementFactor: 0.05,
@@ -114,15 +114,13 @@ function updatePosition() {
 }
 
 function updatePower(t: DOMHighResTimeStamp) {
-  if (state.animatePower) {
-    const pow = state.fractalPowerOriginal;
-    uniforms.fractalPower = pow * Math.sin(t * state.animateSpeed) + 2 * pow;
-  }
+  const pow = state.fractalPowerOriginal;
+  uniforms.fractalPower = pow * Math.sin(t * state.animateSpeed) + 2 * pow;
 }
 
 function update(t: DOMHighResTimeStamp) {
   renderLogic();
-  updatePower(t);
+  if (state.animatePower) updatePower(t);
   requestAnimationFrame(update);
 }
 
@@ -137,17 +135,17 @@ function calcRotation(movement: vec2) {
 
 function renderLogic() {
   if (state.isMoving || state.isRotating || state.animatePower) {
-    if (state.highRes || state.animatePower) setCanvasSize(state.movingScale);
     updateRotation();
     updatePosition();
-    render();
+    render(false);
   } else if (!state.highRes) {
-    setCanvasSize(1);
-    render();
+    render(true);
   }
 }
 
-function render() {
+function render(highRes: boolean) {
+  state.highRes = highRes;
+  highRes ? setCanvasSize(1) : setCanvasSize(state.movingScale);
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
   gl.useProgram(programInfo.program);
   twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
@@ -156,7 +154,6 @@ function render() {
 }
 
 function setCanvasSize(scl: number) {
-  state.highRes = scl === 1 ? true : false;
   const width = window.innerWidth / scl;
   const height = window.innerHeight / scl;
   cnv.width = width;
@@ -258,8 +255,7 @@ function handleTouchEnd() {
 function handleResize() {
   clearTimeout(state.resizingTimeoutId);
   state.resizingTimeoutId = setTimeout(() => {
-    setCanvasSize(state.movingScale);
-    renderLogic();
+    render(true);
   }, 25);
 }
 
