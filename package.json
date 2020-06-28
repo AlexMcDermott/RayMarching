@@ -9,8 +9,7 @@
     "poststart": "npm run cleanup -- tmp",
     "build": "parcel build --public-url /$(basename $(pwd))/ src/index.html",
     "deploy": "gh-pages -d dist -m \"Built from $(git rev-parse --short HEAD) on master\" ; npm run cleanup -- dist",
-    "cleanup": "gh-pages-clean && rm -rf",
-    "setup": "rm -rf .git && > README.md && git init && npm install"
+    "cleanup": "gh-pages-clean && rm -rf"
   },
   "husky": {
     "hooks": {
