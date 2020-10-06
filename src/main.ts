@@ -207,21 +207,21 @@ function configureGui() {
   state.controllers.push(sdf.add(state, 'animatePower'));
   state.controllers.push(sdf.add(state, 'animateSpeed', 0.0001, 0.001));
   state.controllers.push(sdf.add(uniforms, 'sphereRadius', 0, 5));
-  gui.add(functions, "capture");
+  gui.add(functions, 'capture');
   for (const controller of state.controllers) {
     controller.onFinishChange(render);
   }
 }
 
 functions.capture = () => {
-  const image = cnv.toDataURL("image/png");
-  const element = document.createElement("a");
-  element.download = "render";
+  const image = cnv.toDataURL('image/png');
+  const element = document.createElement('a');
+  element.download = 'render';
   element.href = image;
   document.body.appendChild(element);
   element.click();
   document.body.removeChild(element);
-}
+};
 
 function handleKey(e: KeyboardEvent) {
   if (document.pointerLockElement !== cnv) return;
