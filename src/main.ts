@@ -8,7 +8,7 @@ import fragmentSource from './shader/fragment.glsl';
 import vertexSource from './shader/vertex.glsl';
 
 const cnv = document.createElement('canvas');
-const gl = cnv.getContext('webgl');
+const gl = cnv.getContext('webgl', { preserveDrawingBuffer: true });
 document.body.appendChild(cnv);
 
 const programInfo = twgl.createProgramInfo(gl, [vertexSource, fragmentSource]);
@@ -78,6 +78,8 @@ const state = {
   touchDevice: 'ontouchstart' in window,
   pTouch: null,
 };
+
+const functions: any = {};
 
 function updateRotation() {
   const xRotMatrix = mat4.create();
@@ -205,9 +207,20 @@ function configureGui() {
   state.controllers.push(sdf.add(state, 'animatePower'));
   state.controllers.push(sdf.add(state, 'animateSpeed', 0.0001, 0.001));
   state.controllers.push(sdf.add(uniforms, 'sphereRadius', 0, 5));
+  gui.add(functions, "capture");
   for (const controller of state.controllers) {
     controller.onFinishChange(render);
   }
+}
+
+functions.capture = () => {
+  const image = cnv.toDataURL("image/png");
+  const element = document.createElement("a");
+  element.download = "render";
+  element.href = image;
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
 }
 
 function handleKey(e: KeyboardEvent) {
